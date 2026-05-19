@@ -33,33 +33,32 @@ import { hasUserAccess, normaliseExtraIdentity } from '../util'
 
 const POLL_INTERVAL_MS = 10000
 
-const SUPPORTED_ACCESS_TYPES_BY_MODE = {
-  syft: ['ociRegistry'],
-  bdba: ['ociRegistry', 'localBlob/v1', 's3'],
+const SUPPORTED_ACCESS_TYPES = [
+  'ociRegistry',
+  'localBlob/v1',
+  's3',
+]
+
+const SUPPORTED_ARTEFACT_TYPES_BY_ACCESS_TYPE = {
+  'ociRegistry': ['ociImage', 'ociArtifact'],
+  'localBlob/v1': ['directoryTree', 'executable'],
+  's3': ['application/tar', 'application/x-tar'],
 }
 
-const SUPPORTED_ARTEFACT_TYPES_BY_MODE = {
-  syft: ['ociImage', 'directoryTree'],
-  // bdba: no artefact type restriction
-}
-
-const isResourceSupported = (resource, generationMode) => {
+const isResourceSupported = (resource) => {
   const accessType = resource?.access?.type
   const artefactType = resource?.type
 
-  const supportedAccessTypes = SUPPORTED_ACCESS_TYPES_BY_MODE[generationMode]
-  if (supportedAccessTypes && 
-      accessType &&
-      !supportedAccessTypes.includes(accessType))
-    return false
+  if (accessType && !SUPPORTED_ACCESS_TYPES.includes(accessType)) return false
 
-  const supportedArtefactTypes = SUPPORTED_ARTEFACT_TYPES_BY_MODE[generationMode]
-  if (
-    supportedArtefactTypes &&
-    artefactType &&
-    !supportedArtefactTypes.includes(artefactType)
-  )
-    return false
+  if (accessType && artefactType) {
+    const supportedArtefactTypes = SUPPORTED_ARTEFACT_TYPES_BY_ACCESS_TYPE[accessType]
+
+    if (
+      supportedArtefactTypes
+      && !supportedArtefactTypes.find((type) => artefactType.startsWith(type))
+    ) return false
+  }
 
   return true
 }
@@ -125,7 +124,7 @@ const SbomDownloadPopover = ({
 
     const componentReadiness = bom.componentDependencies.flatMap((c) =>
       c.resources.map((resource) => {
-        const isSupported = isResourceSupported(resource, generationMode)
+        const isSupported = isResourceSupported(resource)
 
         const hasScan =
           isSupported &&
@@ -155,7 +154,7 @@ const SbomDownloadPopover = ({
     )
 
     return componentReadiness
-  }, [bom, scanInfos, generationMode])
+  }, [bom, scanInfos])
 
   const readyComponents = sbomReadiness?.filter((c) => c.ready) ?? []
   const notReadyComponents = sbomReadiness?.filter((c) => !c.ready && c.supported) ?? []
