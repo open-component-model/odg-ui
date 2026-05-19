@@ -84,19 +84,10 @@ const SbomDownloadPopover = ({
 
   const artefacts = React.useMemo(() => {
     if (!bom?.componentDependencies) return null
-    return bom.componentDependencies.flatMap((c) =>
-      c.resources.map((resource) => ({
-        component_name: c.name,
-        component_version: c.version,
-        artefact_kind: ARTEFACT_KIND.RESOURCE,
-        artefact: {
-          artefact_name: resource.name,
-          artefact_version: resource.version,
-          artefact_type: resource.type,
-          artefact_extra_id: resource.extraIdentity,
-        },
-      })),
-    )
+    return bom.componentDependencies.map((component) => ({
+      component_name: component.name,
+      component_version: component.version,
+    }))
   }, [bom])
 
   const types = React.useMemo(() => {
@@ -141,14 +132,20 @@ const SbomDownloadPopover = ({
           )
 
         return {
-          name: resource.name,
-          version: resource.version,
-          accessType: resource?.access?.type,
-          artefactType: resource?.type,
-          extraIdentity: resource.extraIdentity,
-          component: `${c.name}:${c.version}`,
+          accessType: resource.access?.type,
           ready: hasScan,
           supported: isSupported,
+          componentArtefactId: {
+            component_name: c.name,
+            component_version: c.version,
+            artefact_kind: ARTEFACT_KIND.RESOURCE,
+            artefact: {
+              artefact_name: resource.name,
+              artefact_version: resource.version,
+              artefact_type: resource.type,
+              artefact_extra_id: resource.extraIdentity,
+            },
+          },
         }
       }),
     )
@@ -188,23 +185,19 @@ const SbomDownloadPopover = ({
   const isDisabled = isLoading || isTriggering || isPolling
   const isClosable = !isLoading && !isTriggering
 
-  const toListItem = (r) => ({
-    primary: `${r.name}:${r.version}`,
-    secondary: `${r.accessType ? `${r.accessType}` : ''}${r.artefactType ? ` · ${r.artefactType}` : ''}`,
-    component: r.component,
-  })
+  const toListItem = (r) => {
+    const artefactId = r.componentArtefactId.artefact
+    return {
+      primary: `${artefactId.artefact_name}:${artefactId.artefact_version}`,
+      secondary: `${r.accessType ? `${r.accessType}` : ''}${artefactId.artefact_type ? ` · ${artefactId.artefact_type}` : ''}`,
+      component: `${r.componentArtefactId.component_name}:${r.componentArtefactId.component_version}`,
+    }
+  }
 
   const triggerSbomGeneration = async () => {
     if (!artefacts || notReadyComponents.length === 0) return
 
-    const notReadyKeys = new Set(
-      notReadyComponents.map((r) => `${r.component}:${r.name}:${r.version}:${r.artefactType}:${normaliseExtraIdentity(r.extraIdentity)}`),
-    )
-    const backlogArtefacts = artefacts.filter((a) =>
-      notReadyKeys.has(
-        `${a.component_name}:${a.component_version}:${a.artefact.artefact_name}:${a.artefact.artefact_version}:${a.artefact.artefact_type}:${normaliseExtraIdentity(a.artefact.artefact_extra_id)}`,
-      ),
-    )
+    const backlogArtefacts = notReadyComponents.map((notReadyComponent) => notReadyComponent.componentArtefactId)
 
     setIsTriggering(true)
     try {
