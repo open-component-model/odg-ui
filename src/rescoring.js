@@ -2163,19 +2163,42 @@ const Finding = ({
       <FalcoExtraInfo finding={finding.finding}/>
     </div>
   } else if (rescoring.finding_type === FINDING_TYPES.IP) {
+    const sortedPolicyViolations = finding.policy_violations.map((pv) => pv.name).sort()
+    const sortedLicenses = finding.licenses.map((license) => license.name).sort()
+
     return <Stack spacing={0.5}>
-      <Typography
-        variant='inherit'
-        sx={{ whiteSpace: 'pre-line', wordBreak: 'break-word', lineHeight: 1.25 }}
-      >
-        {finding.policy_violations.map((pv) => pv.name).sort().join('\n')}
-      </Typography>
-      <Typography
-        variant='inherit'
-        sx={{ whiteSpace: 'pre-line', wordBreak: 'break-word', lineHeight: 1.25 }}
-      >
-        {finding.licenses.map((license) => license.name).sort().join('\n')}
-      </Typography>
+      {
+        sortedPolicyViolations.length > 0 && <div>
+          <Typography variant='caption' color='text.secondary'>
+            {`${pluralise('Policy Violation', sortedPolicyViolations.length)} (${sortedPolicyViolations.length})`}
+          </Typography>
+          {
+            sortedPolicyViolations.map((policyViolation) => <Typography
+              key={policyViolation}
+              variant='inherit'
+              sx={{ wordBreak: 'break-word', lineHeight: 1.25 }}
+            >
+              {`• ${policyViolation}`}
+            </Typography>)
+          }
+        </div>
+      }
+      {
+        sortedLicenses.length > 0 && <div>
+          <Typography variant='caption' color='text.secondary'>
+            {`${pluralise('License', sortedLicenses.length)} (${sortedLicenses.length})`}
+          </Typography>
+          {
+            sortedLicenses.map((license) => <Typography
+              key={license}
+              variant='inherit'
+              sx={{ wordBreak: 'break-word', lineHeight: 1.25 }}
+            >
+              {`• ${license}`}
+            </Typography>)
+          }
+        </div>
+      }
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography variant='inherit'>Original:</Typography>
         <Typography
