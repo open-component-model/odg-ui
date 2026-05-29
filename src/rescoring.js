@@ -1716,7 +1716,7 @@ const PackageVersionOverwriteFields = ({
 
   const packageVersionMenuItems = [
     <MenuItem key='' value=''>
-      <Typography variant='inherit' sx={{ color: 'text.secondary' }}>(none)</Typography>
+      <Typography variant='inherit' sx={{ color: 'text.secondary' }}>(all versions)</Typography>
     </MenuItem>,
     ...sortedPackageVersions.map((packageVersion) => <MenuItem key={packageVersion} value={packageVersion}>
       <Typography variant='inherit'>{packageVersion}</Typography>
