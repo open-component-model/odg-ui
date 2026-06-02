@@ -71,7 +71,12 @@ import {
   FeatureRegistrationContext,
   SearchParamContext,
 } from './App'
-import { artefactsMetadata, rescore, routes } from './api'
+import {
+  artefactsMetadata,
+  rescore,
+  routes,
+  serviceExtensions,
+} from './api'
 import { registerCallbackHandler } from './feature'
 import {
   errorSnackbarProps,
@@ -79,8 +84,10 @@ import {
   META_ALLOWED_PROCESSING_TIME,
   META_RESCORING_RULES,
   META_SPRINT_NAMES,
+  PRIORITIES,
   RESCORING_MODES,
   SCANNER_WRITEBACK_TYPES,
+  SCANNERS_FOR_WRITEBACK_TYPE,
 } from './consts'
 import { OcmNode, OcmNodeDetails } from './ocm/iter'
 import {
@@ -1838,6 +1845,28 @@ const OverwriteDialog = ({
     }
   }
 
+  const triggerRescans = async () => {
+    const scanners = SCANNERS_FOR_WRITEBACK_TYPE[scannerWritebackType]
+
+    await Promise.all(scanners.map(async (scanner) => {
+      await serviceExtensions.backlogItems.create({
+        service: scanner,
+        priority: PRIORITIES.CRITICAL.name,
+        artefacts: [{
+          component_name: component.name,
+          component_version: component.version,
+          artefact_kind: artefactKind,
+          artefact: {
+            artefact_name: artefact.name,
+            artefact_version: artefact.version,
+            artefact_type: artefact.type,
+            artefact_extra_id: artefact.extraIdentity,
+          },
+        }],
+      })
+    }))
+  }
+
   const handleApply = async () => {
     setIsLoading(true)
     try {
@@ -1854,6 +1883,16 @@ const OverwriteDialog = ({
           ],
         },
       })
+
+      try {
+        await triggerRescans()
+      } catch (error) {
+        enqueueSnackbar('Re-scan could not be triggered automatically.', {
+          ...errorSnackbarProps,
+          details: error.toString(),
+          onRetry: triggerRescans,
+        })
+      }
 
       enqueueSnackbar('Change applied successfully', {
         variant: 'success',
@@ -2231,11 +2270,56 @@ Finding.propTypes = {
 
 const PendingScannerWritebacks = ({
   pendingScannerWritebacks,
+  ocmNode,
 }) => {
+  const [user] = useFetchAuthUser()
+  const isAuthorised = hasUserAccess({
+    permissions: user?.permissions,
+    route: new URL(routes.serviceExtensions.backlogItems()).pathname,
+    method: 'POST',
+  })
+
   if (!pendingScannerWritebacks || pendingScannerWritebacks.length === 0) return null
 
   const licenseOverwrites = pendingScannerWritebacks.filter((wb) => wb.data.sub_type === SCANNER_WRITEBACK_TYPES.LICENSE)
   const packageVersionOverwrites = pendingScannerWritebacks.filter((wb) => wb.data.sub_type === SCANNER_WRITEBACK_TYPES.PACKAGE_VERSION)
+  const scannerWritebackTypes = [...new Set(pendingScannerWritebacks.map((wb) => wb.data.sub_type))]
+  const scanners = [...new Set(scannerWritebackTypes.flatMap((scannerWritebackType) => SCANNERS_FOR_WRITEBACK_TYPE[scannerWritebackType]))]
+
+  const triggerRescans = async (e) => {
+    e.stopPropagation()
+
+    try {
+      await Promise.all(scanners.map(async (scanner) => {
+        await serviceExtensions.backlogItems.create({
+          service: scanner,
+          priority: PRIORITIES.CRITICAL.name,
+          artefacts: [{
+            component_name: ocmNode.component.name,
+            component_version: ocmNode.component.version,
+            artefact_kind: ocmNode.artefactKind,
+            artefact: {
+              artefact_name: ocmNode.artefact.name,
+              artefact_version: ocmNode.artefact.version,
+              artefact_type: ocmNode.artefact.type,
+              artefact_extra_id: ocmNode.artefact.extraIdentity,
+            },
+          }],
+        })
+      }))
+      enqueueSnackbar('Re-scan triggered successfully.', {
+        variant: 'success',
+        anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+        autoHideDuration: 6000,
+      })
+    } catch (error) {
+      enqueueSnackbar('Re-scan could not be triggered.', {
+        ...errorSnackbarProps,
+        details: error.toString(),
+        onRetry: triggerRescans,
+      })
+    }
+  }
 
   return <Tooltip
     title={<Stack spacing={0.5}>
@@ -2243,7 +2327,18 @@ const PendingScannerWritebacks = ({
         {`${pendingScannerWritebacks.length} pending change${pendingScannerWritebacks.length > 1 ? 's' : ''}`}
       </Typography>
       <Typography variant='inherit' sx={{ opacity: 0.85 }}>
-        A re-scan is required before these take effect.
+        {'A re-scan is required before these take effect'}
+        { isAuthorised && ' '}
+        {
+          isAuthorised && <Box
+            component='span'
+            onClick={triggerRescans}
+            sx={{ cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            {'(trigger now)'}
+          </Box>
+        }
+        {'.'}
       </Typography>
       {
         licenseOverwrites.length > 0 && <>
@@ -2293,6 +2388,7 @@ const PendingScannerWritebacks = ({
 PendingScannerWritebacks.displayName = 'PendingScannerWritebacks'
 PendingScannerWritebacks.propTypes = {
   pendingScannerWritebacks: PropTypes.arrayOf(PropTypes.object),
+  ocmNode: PropTypes.object.isRequired,
 }
 
 
@@ -2564,7 +2660,7 @@ const RescoringContentTableRow = ({
               </IconButton>
             </Tooltip>
           }
-          <PendingScannerWritebacks pendingScannerWritebacks={pending_scanner_writebacks}/>
+          <PendingScannerWritebacks pendingScannerWritebacks={pending_scanner_writebacks} ocmNode={ocmNode}/>
           <AppliedRulesExtraInfo matchingRules={matchingRules}/>
         </div>
       </TableCell>
