@@ -1625,12 +1625,12 @@ const LicenseOverwriteFields = ({
     />
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <FormControl variant='outlined' size='small' sx={{ flex: 1 }} error={Boolean(equalLicenses || emptyLicenses)}>
-        <InputLabel>License From</InputLabel>
+        <InputLabel>Detected License</InputLabel>
         <Select
           value={licenseFrom}
           onChange={(e) => setLicenseFrom(e.target.value)}
           renderValue={(value) => <LicenseSelectValue label={value}/>}
-          label='License From'
+          label='Detected License'
         >
           {licenseMenuItems}
         </Select>
@@ -1658,7 +1658,7 @@ const LicenseOverwriteFields = ({
         }}>
           <TextField
             {...params}
-            label='License To'
+            label='New License'
             variant='outlined'
             size='small'
             error={hasError}
@@ -1737,11 +1737,11 @@ const PackageVersionOverwriteFields = ({
     </Box>
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <FormControl variant='outlined' size='small' sx={{ flex: 1 }}>
-        <InputLabel>Package Version From</InputLabel>
+        <InputLabel>Detected Package Version</InputLabel>
         <Select
           value={packageVersionFrom}
           onChange={(e) => setPackageVersionFrom(e.target.value)}
-          label='Package Version From'
+          label='Detected Package Version'
         >
           {packageVersionMenuItems}
         </Select>
@@ -1751,7 +1751,7 @@ const PackageVersionOverwriteFields = ({
         <TrendingFlatIcon/>
       </Box>
       <TextField
-        label='Package Version To'
+        label='New Package Version'
         variant='outlined'
         size='small'
         sx={{ flex: 1 }}
@@ -1894,7 +1894,7 @@ const OverwriteDialog = ({
         })
       }
 
-      enqueueSnackbar('Change applied successfully', {
+      enqueueSnackbar('Change was saved successfully. It takes some time until data is updated.', {
         variant: 'success',
         anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
         autoHideDuration: 6000,
