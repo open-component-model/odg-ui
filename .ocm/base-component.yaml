@@ -1,4 +1,4 @@
-name: ocm.software/ocm-gear/delivery-dashboard
+name: ocm.software/open-delivery-gear/ui
 resources:
   - name: busybox
     version: 1.37.0
