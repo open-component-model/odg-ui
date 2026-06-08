@@ -463,16 +463,7 @@ const ResponsiblesHeading = ({
           <Divider/>
           <Typography variant='inherit'>
             You can re-assign responsibles permanently by adding a label to
-            the corresponding resource entry in Component Descriptor,
-            exemplarily done{' '}
-            <a
-              href='https://github.com/open-component-model/delivery-dashboard/blob/master/.ocm/base-component.yaml'
-              rel='noreferrer'
-              target='_blank'
-            >
-              here
-            </a>
-            .
+            the corresponding resource entry in the OCM Component Descriptor.
           </Typography>
         </Stack>
       }
