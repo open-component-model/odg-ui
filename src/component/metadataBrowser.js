@@ -270,7 +270,7 @@ HelpPopover.propTypes = {
 const MetadataBrowserTab = ({ component, prefill, findingCfgs = [] }) => {
   const [query, setQuery] = React.useState(buildPrefillText(prefill))
 
-  const [scopeRecursive, setScopeRecursive] = React.useState(false)
+  const [scopeRecursive, setScopeRecursive] = React.useState(true)
 
   const [rows, setRows] = React.useState(null)
   const [error, setError] = React.useState(null)
