@@ -112,7 +112,7 @@ const asKey = ({
 
 /**
  * Generates a key to uniquely identify artefact metadata `data` properties. Mirrors key defintions
- * from https://github.com/open-component-model/delivery-service/blob/master/odg/model.py.
+ * from https://github.com/open-component-model/odg-core/blob/master/odg/model.py.
  *
  * @param {String} type - artefact metadata type
  * @param {Object} data - the artefact metadata `data` payload
