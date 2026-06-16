@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Box, Button, Link } from '@mui/material'
+import { Box, Button, Link, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material'
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
 
 import PropTypes from 'prop-types'
@@ -37,7 +37,19 @@ DownloadButton.propTypes = {
 const bomCache = {}
 
 export const DownloadBom = ({ component, ocmRepo, isLoading }) => {
-  const handleClick = async () => {
+  const [showDeprecationDialog, setShowDeprecationDialog] = React.useState(false)
+
+  const handleClick = () => {
+    setShowDeprecationDialog(true)
+  }
+
+  const handleCancelDownload = () => {
+    setShowDeprecationDialog(false)
+  }
+
+  const handleConfirmDownload = async () => {
+    setShowDeprecationDialog(false)
+
     const key = `${component.name}:${component.version}`
     if (!bomCache[key]) {
       bomCache[key] = await components.componentDependencies({
@@ -59,9 +71,26 @@ export const DownloadBom = ({ component, ocmRepo, isLoading }) => {
   }
 
   return (
-    <DownloadButton onClick={handleClick} isLoading={isLoading}>
-      download bom
-    </DownloadButton>
+    <>
+      <DownloadButton onClick={handleClick} isLoading={isLoading}>
+        download bom
+      </DownloadButton>
+
+      <Dialog open={showDeprecationDialog} onClose={handleCancelDownload}>
+        <DialogTitle>Feature Deprecation Notice</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            The Download BoM feature is deprecated and will be removed in an upcoming release.
+            Please plan to use alternative methods for accessing Bill of Materials data, such as
+            Software Bill of Materials.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button color='error' onClick={handleCancelDownload}>Cancel</Button>
+          <Button color='secondary' onClick={handleConfirmDownload}>Download Anyway</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }
 DownloadBom.displayName = 'DownloadBom'
