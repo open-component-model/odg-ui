@@ -152,6 +152,9 @@ export const mostSpecificRescoring = (rescorings) => {
 
 
 export const filterRescoringsForFinding = (finding, rescorings) => {
+  const findingExtraIdentity = {...finding.artefact.artefact.artefact_extra_id}
+  delete findingExtraIdentity.version
+
   return rescorings.filter((rescoring) => {
     if (rescoring.data.referenced_type !== finding.meta.type) return false
     if (
@@ -179,10 +182,11 @@ export const filterRescoringsForFinding = (finding, rescorings) => {
       rescoring.artefact.artefact.artefact_version
       && rescoring.artefact.artefact.artefact_version !== finding.artefact.artefact.artefact_version
     ) return false
+    const rescoringExtraIdentity = {...rescoring.artefact.artefact.artefact_extra_id}
+    delete rescoringExtraIdentity.version
     if (
-      Object.keys(rescoring.artefact.artefact.artefact_extra_id).length > 0
-      && normaliseExtraIdentity(rescoring.artefact.artefact.artefact_extra_id)
-        !== normaliseExtraIdentity(finding.artefact.artefact.artefact_extra_id)
+      Object.keys(rescoringExtraIdentity).length > 0
+      && normaliseExtraIdentity(rescoringExtraIdentity) !== normaliseExtraIdentity(findingExtraIdentity)
     ) return false
 
     if (finding.meta.type === FINDING_TYPES.VULNERABILITY) {
