@@ -141,29 +141,13 @@ export const pluralise = (word, count, verbSingular, verbPlural) => {
   return `${word.replace(/y$/, 'ie')}${word.endsWith('s') ? '' : 's'}`
 }
 
-export const orderRescoringsBySpecificity = (rescorings) => {
-  return rescorings?.sort((a, b) => {
-    // if one rescoring has global scope, use the other one
-    if (a.artefact.component_name && !b.artefact.component_name) return -1
-    if (b.artefact.component_name && !a.artefact.component_name) return 1
-
-    // if one rescoring has component scope, use the other one
-    if (a.artefact.artefact.artefact_name && !b.artefact.artefact.artefact_name) return -1
-    if (b.artefact.artefact.artefact_name && !a.artefact.artefact.artefact_name) return 1
-
-    // if one rescoring has artefact scope, use the other one
-    if (a.artefact.artefact.artefact_version && !b.artefact.artefact.artefact_version) return -1
-    if (b.artefact.artefact.artefact_version && !a.artefact.artefact.artefact_version) return 1
-
-    // if both rescorings share the same scope, use the latest one
-    return new Date(b.meta.creation_date) - new Date(a.meta.creation_date)
-  })
-}
 
 export const mostSpecificRescoring = (rescorings) => {
   if (!rescorings?.length > 0) return null
 
-  return orderRescoringsBySpecificity(rescorings)[0]
+  return rescorings.sort((a, b) => {
+    return new Date(b.meta.creation_date) - new Date(a.meta.creation_date)
+  })[0]
 }
 
 
