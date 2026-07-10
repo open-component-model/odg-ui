@@ -12,7 +12,6 @@ import {
 import {
   capitalise,
   mostSpecificRescoring,
-  orderRescoringsBySpecificity,
 } from './util'
 import { artefactMetadataFilter } from './ocm/util'
 
@@ -190,8 +189,7 @@ export const findingIsResolved = ({
 }) => {
   if (rescoring.applicable_rescorings.length === 0) return false
 
-  const rescoringsOrderedBySpecificity = orderRescoringsBySpecificity(rescoring.applicable_rescorings)
-  const id = rescoringsOrderedBySpecificity[0].data.severity
+  const id = mostSpecificRescoring(rescoring.applicable_rescorings).data.severity
   const categorisation = findCategorisationById({id, findingCfg})
 
   return categorisation.value === 0

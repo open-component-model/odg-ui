@@ -184,15 +184,21 @@ const scopedComponentArtefactId = ({
   artefact,
   artefactKind,
 }) => {
+  const extraIdentity = {...artefact.extraIdentity}
+
+  if (scope === scopeOptions.ARTEFACT) {
+    delete extraIdentity.version
+  }
+
   return {
     component_name: [scopeOptions.COMPONENT, scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? component.name : null,
     component_version: scopeOptions.SINGLE === scope && component.version !== 'greatest' ? component.version : null,
-    artefact_kind: artefactKind,
+    artefact_kind: [scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? artefactKind : null,
     artefact: {
       artefact_name: [scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? artefact.name : null,
       artefact_version: scopeOptions.SINGLE === scope ? artefact.version : null,
-      artefact_type: artefact.type,
-      artefact_extra_id: scopeOptions.SINGLE === scope ? artefact.extraIdentity : {},
+      artefact_type: [scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? artefact.type : null,
+      artefact_extra_id: [scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? extraIdentity : {},
     },
   }
 }
