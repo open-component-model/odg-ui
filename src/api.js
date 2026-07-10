@@ -452,7 +452,6 @@ const rescore = {
     artefactVersion,
     artefactType,
     artefactExtraId,
-    cveRescoringRuleSetName,
     types,
   }) => {
     const url = new URL(routes.rescore)
@@ -464,7 +463,6 @@ const rescore = {
       artefactVersion,
       artefactType,
       artefactExtraId: JSON.stringify(artefactExtraId),
-      cveRescoringRuleSetName,
     })
     types?.map((type) => appendPresentParams(url, {type}))
 
