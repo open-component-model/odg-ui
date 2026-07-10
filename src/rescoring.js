@@ -38,10 +38,6 @@ import {
   TextField,
   Tooltip,
   Typography,
-  Switch,
-  FormGroup,
-  FormControlLabel,
-  FormLabel,
   Alert,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
@@ -533,7 +529,7 @@ const RescoringFilterOption = ({
     </li>
   }
 
-  return <Stack direction='column' spacing={2} sx={{width: '20vw'}}>
+  return <Stack direction='column' spacing={2} sx={{width: '28vw'}}>
     <Typography>
       {title}
     </Typography>
@@ -624,11 +620,8 @@ const RescoringFilter = ({
   updateFilter,
   rescoringsLoading,
   sprintsLoading,
-  toggleRescored,
   rescorings,
 }) => {
-  const countRescored = rescorings.filter(rescoring => rescoring.applicable_rescorings.length !== 0).length
-
   return <Stack direction='row' spacing={5} display='flex' alignItems='center' justifyContent='center'>
     <FormControl variant='standard' sx={{ width: '10vw'}}>
       <InputLabel>Finding Type</InputLabel>
@@ -685,24 +678,6 @@ const RescoringFilter = ({
       title='Due Date'
       defaultSelection={preSelectedSprints}
     />
-    <Divider
-      orientation='vertical'
-      flexItem
-    />
-    <FormGroup sx={{width: '15vw'}}>
-      <FormLabel>
-        Hide findings
-      </FormLabel>
-      <FormControlLabel
-        control={
-          <Switch
-            onChange={(e, s) => toggleRescored(e, s)}
-            disabled={rescoringsLoading}
-          />
-        }
-        label={`with rescorings ${rescoringsLoading ? '' : `(${countRescored})`}`}
-      />
-    </FormGroup>
   </Stack>
 }
 RescoringFilter.displayName = 'RescoringFilter'
@@ -716,7 +691,6 @@ RescoringFilter.propTypes = {
   updateFilter: PropTypes.func.isRequired,
   rescoringsLoading: PropTypes.bool.isRequired,
   sprintsLoading: PropTypes.bool.isRequired,
-  toggleRescored: PropTypes.func.isRequired,
   rescorings: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
@@ -3687,13 +3661,6 @@ const RescoringModal = ({
     e.stopPropagation() // stop interaction with background
   }
 
-  const toggleRescored = React.useCallback((event, toggled) => {
-    updateFilter('toggleRescored', (rescoring) => {
-      if (!toggled) return true
-      return rescoring.applicable_rescorings.length === 0
-    })
-  }, [updateFilter] )
-
   const searchParamContext = React.useContext(SearchParamContext)
   const preSelectedSprints = searchParamContext.getAll('sprints')
 
@@ -3770,7 +3737,6 @@ const RescoringModal = ({
           updateFilter={updateFilter}
           rescoringsLoading={rescoringsLoading}
           sprintsLoading={sprintsLoading}
-          toggleRescored={toggleRescored}
           rescorings={rescoringsForType ?? []}
         />
       </Grid>
