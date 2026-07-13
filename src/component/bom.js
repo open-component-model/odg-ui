@@ -1766,7 +1766,7 @@ const IssueChip = ({
   ocmNode,
   issueReplicatorCfg,
 }) => {
-  const ocmNodes = React.useMemo(() => [ocmNode], [ocmNode])
+  const ocmNodes = React.useMemo(() => [ocmNode], [ocmNode.identity])
   const mapping = issueReplicatorCfg.mappings.find((mapping) => ocmNode.component.name.startsWith(mapping.prefix))
 
   if (!mapping) return
@@ -1915,7 +1915,7 @@ const ComplianceCell = ({
   })
 
   const handleRescoringClose = React.useCallback(() => setMountRescoring(false), [setMountRescoring])
-  const ocmNodes = React.useMemo(() => [ocmNode], [ocmNode])
+  const ocmNodes = React.useMemo(() => [ocmNode], [ocmNode.identity])
 
   const manuallyRescorableFindingTypes = rescorableFindingTypes({findingCfgs})
 
@@ -2348,7 +2348,6 @@ const RescoringCell = ({
 
     return `${title} ${capitalise(categorisation.display_name)}`
   }
-
 
   return <Grid item onClick={(e) => e.stopPropagation()}>
     {
