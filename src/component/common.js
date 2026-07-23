@@ -65,7 +65,6 @@ import { RescoringModal } from '../rescoring'
 import ExtraWideTooltip from '../util/extraWideTooltip'
 
 import ODGLogo from '../resources/odg-logo.svg'
-import SAPLogo from '../resources/sap-logo.svg'
 
 
 const ComponentNavigationHeader = () => {
@@ -102,17 +101,6 @@ const ComponentNavigationHeader = () => {
   </div>
 }
 
-const LogoCorner = () => {
-  return <Box
-    sx={{
-      position: 'fixed',
-      paddingLeft: '1rem',
-      bottom: 0,
-    }}
-  >
-    <img src={SAPLogo} alt='sap-logo'/>
-  </Box>
-}
 
 export const ComponentNavigation = React.memo(({
   specialComponentId,
@@ -125,7 +113,6 @@ export const ComponentNavigation = React.memo(({
       <LandscapeList specialComponentId={specialComponentId} browserLocalOnly={browserLocalOnly}/>
       <ServiceList/>
     </div>
-    <LogoCorner/>
   </>
 })
 ComponentNavigation.displayName = 'componentNavigation'
