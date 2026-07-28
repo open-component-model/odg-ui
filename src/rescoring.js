@@ -1317,6 +1317,14 @@ const Subject = ({
       </div>
     </Stack>
 
+  } else if (rescoring.finding_type === FINDING_TYPES.CODEQL) {
+    return <Stack>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Typography variant='inherit'>{finding.language}</Typography>
+        <OcmNodeDetails ocmNode={ocmNode} ocmRepo={ocmRepo} iconProps={{ sx: { height: '1rem' } }}/>
+      </div>
+    </Stack>
+
   } else if (rescoring.finding_type === FINDING_TYPES.CRYPTO) {
     return <Stack>
       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -2081,6 +2089,19 @@ const Finding = ({
         </Typography>
       </div>
       <Typography variant='inherit' marginRight='0.4rem'>{finding.sast_status}</Typography>
+    </Stack>
+
+  } else if (rescoring.finding_type === FINDING_TYPES.CODEQL) {
+    return <Stack spacing={0.5}>
+      <div style={{ display: 'flex' }}>
+        <Typography variant='inherit' marginRight='0.4rem'>Original:</Typography>
+        <Typography variant='inherit' color={`${categorisationValueToColor(categorisation.value)}.main`}>
+          {
+            categorisation.display_name
+          }
+        </Typography>
+      </div>
+      <Typography variant='inherit' marginRight='0.4rem'>{finding.codeql_status}</Typography>
     </Stack>
 
   } else if (rescoring.finding_type === FINDING_TYPES.CRYPTO) {
@@ -2860,6 +2881,17 @@ const RescoringContent = ({
       }).value,
     }
 
+    const codeqlAccesses = {
+      [orderAttributes.SUBJECT]: rescoring.finding.language,
+      [orderAttributes.FINDING]: rescoring.finding.codeql_status,
+      [orderAttributes.SPRINT]: rescoring.sprint ? new Date(rescoring.sprint.end_date) : new Date(8640000000000000),
+      [orderAttributes.CURRENT]: categoriseRescoringProposal({rescoring, findingCfg}).value,
+      [orderAttributes.RESCORED]: findCategorisationById({
+        id: rescoring.severity,
+        findingCfg: findingCfg,
+      }).value,
+    }
+
     const cryptoAccess = {
       [orderAttributes.SUBJECT]: rescoring.finding.asset?.names.sort(),
       [orderAttributes.FINDING]: `${FINDING_TYPES.CRYPTO}_${rescoring.finding.standard}_${rescoring.finding.asset?.asset_type}`,
@@ -2913,6 +2945,8 @@ const RescoringContent = ({
       return malwareAccess[desired]
     } else if (rescoringType === FINDING_TYPES.SAST) {
       return sastAccesses[desired]
+    } else if (rescoringType === FINDING_TYPES.CODEQL) {
+      return codeqlAccesses[desired]
     } else if (rescoringType === FINDING_TYPES.CRYPTO) {
       return cryptoAccess[desired]
     } else if (rescoringType === FINDING_TYPES.DIKI) {
@@ -3350,6 +3384,12 @@ const Rescore = ({
         return {
           sast_status: rescoring.finding.sast_status,
           sub_type: rescoring.finding.sub_type,
+        }
+      } else if (type === FINDING_TYPES.CODEQL) {
+        return {
+          codeql_status: rescoring.finding.codeql_status,
+          repo_url: rescoring.finding.repo_url,
+          language: rescoring.finding.language,
         }
       } else if (type === FINDING_TYPES.CRYPTO) {
         return {

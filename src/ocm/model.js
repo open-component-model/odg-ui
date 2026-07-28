@@ -90,6 +90,7 @@ Object.freeze(artefactMetadataTypes)
 const datasources = {
   BDBA: 'bdba',
   CLAMAV: 'clamav',
+  CODEQL: 'codeql',
   SAST: 'sast',
   OSID: 'osid',
   CC_UTILS: 'cc-utils',
@@ -137,6 +138,10 @@ export const dataKey = ({type, data}) => {
 
   if (type === FINDING_TYPES.SAST) return asKey({
     props: [data.sast_status, data.sub_type],
+  })
+
+  if (type === FINDING_TYPES.CODEQL) return asKey({
+    props: [data.codeql_status, data.repo_url, data.language],
   })
 
   if (type === cryptoAssetTypes.ALGORITHM) return asKey({
@@ -221,6 +226,8 @@ const displayNameForData = ({
     return `${displayName} ${data.license.name}`
   } else if (type === FINDING_TYPES.SAST) {
     return `${displayName} ${data.sub_type}`
+  } else if (type === FINDING_TYPES.CODEQL) {
+    return `${displayName} ${data.language}`
   } else if (type === artefactMetadataTypes.STRUCTURE_INFO) {
     return `Package ${data.package_name} ${data.package_version}`
   } else if (type === FINDING_TYPES.CRYPTO) {
