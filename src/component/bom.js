@@ -2005,6 +2005,7 @@ const ComplianceCell = ({
   const lastMalwareScan = findLastScan(complianceFiltered, datasources.CLAMAV)
   const lastOsIdScan = findLastScan(complianceFiltered, datasources.OSID)
   const lastSastScan = findLastScan(complianceFiltered, datasources.SAST)
+  const lastCodeqlScan = findLastScan(complianceFiltered, datasources.CODEQL)
   const lastIPScan = findLastScan(complianceFiltered, datasources.BLACKDUCK)
 
   const retrieveCryptoFindings = retrieveFindingsForType({
@@ -2034,6 +2035,11 @@ const ComplianceCell = ({
   })
   const retrieveSastFindings = retrieveFindingsForType({
     findingType: FINDING_TYPES.SAST,
+    findingCfgs: findingCfgs,
+    ocmNode: ocmNode,
+  })
+  const retrieveCodeqlFindings = retrieveFindingsForType({
+    findingType: FINDING_TYPES.CODEQL,
     findingCfgs: findingCfgs,
     ocmNode: ocmNode,
   })
@@ -2125,6 +2131,19 @@ const ComplianceCell = ({
           type={FINDING_TYPES.SAST}
           categorisation={getCategorisation(FINDING_TYPES.SAST)}
           lastScan={lastSastScan}
+          findingCfgs={findingCfgs}
+          fetchComplianceSummary={fetchComplianceSummary}
+          isLoading={state.isLoading}
+        />
+      }
+      {
+        extensionsCfg?.codeql?.enabled && ocmNode.artefactKind === ARTEFACT_KIND.SOURCE && retrieveCodeqlFindings && <RescoringCell
+          ocmNodes={ocmNodes}
+          ocmRepo={ocmRepo}
+          datasource={datasources.CODEQL}
+          type={FINDING_TYPES.CODEQL}
+          categorisation={getCategorisation(FINDING_TYPES.CODEQL)}
+          lastScan={lastCodeqlScan}
           findingCfgs={findingCfgs}
           fetchComplianceSummary={fetchComplianceSummary}
           isLoading={state.isLoading}
