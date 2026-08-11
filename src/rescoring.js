@@ -2031,10 +2031,16 @@ const Finding = ({
         <Typography variant='inherit' marginRight='0.4rem'>CVSS v3:</Typography>
         <Typography variant='inherit' color={`${categorisationValueToColor(categorisation.value)}.main`}>
           {
-            finding.cvss_v3_score
+            finding.cvss_score ?? finding.cvss_v3_score
           }
         </Typography>
       </div>
+      {
+        finding.fixed_version && <div style={{ display: 'flex' }}>
+          <Typography variant='inherit' marginRight='0.4rem'>Fixed in:</Typography>
+          <Typography variant='inherit'>{finding.fixed_version}</Typography>
+        </div>
+      }
     </Stack>
 
   } else if (rescoring.finding_type === FINDING_TYPES.MALWARE) {
