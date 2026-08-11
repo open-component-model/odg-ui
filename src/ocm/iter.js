@@ -59,10 +59,11 @@ class OcmNode {
   }
 
   findLabel(labelName) {
+    const names = Array.isArray(labelName) ? labelName : [labelName]
     return [
       ...(this.isComponentNode() ? [] : this.artefact.labels), // most specific first
       ...this.component.labels,
-    ].find(l => l.name === labelName)
+    ].find(l => names.includes(l.name))
   }
 
   normalisedExtraIdentity() {

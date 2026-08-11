@@ -59,9 +59,8 @@ import {noMetadataInfoCfg} from '../consts'
 const notificationNoMetadata = 'No metadata available for the selected component.'
 
 const knownLabelNames = {
-  cveCategorisation: 'gardener.cloud/cve-categorisation',
-  responsible: 'cloud.gardener.cnudie/responsibles',
-  mainSource: 'cloud.gardener/cicd/source',
+  cveCategorisation: ['security.ocm.software/risk-profile', 'gardener.cloud/cve-categorisation'],
+  responsible: ['odg.ocm.software/responsibles', 'cloud.gardener.cnudie/responsibles'],
 }
 Object.freeze(knownLabelNames)
 
