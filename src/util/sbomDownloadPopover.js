@@ -54,7 +54,7 @@ const isResourceSupported = (resource) => {
   const artefactType = resource?.type
 
   if (accessType && !SUPPORTED_ACCESS_TYPES.includes(accessType)) return false
-  if (artefactType && !SUPPORTED_ARTEFACT_TYPES.includes(artefactType)) return false
+  if (artefactType && !SUPPORTED_ARTEFACT_TYPES.find((type) => artefactType.startsWith(type))) return false
 
   return true
 }
