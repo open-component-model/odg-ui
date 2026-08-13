@@ -141,37 +141,30 @@ export const pluralise = (word, count, verbSingular, verbPlural) => {
   return `${word.replace(/y$/, 'ie')}${word.endsWith('s') ? '' : 's'}`
 }
 
-export const orderRescoringsBySpecificity = (rescorings) => {
-  return rescorings?.sort((a, b) => {
-    // if one rescoring has global scope, use the other one
-    if (a.artefact.component_name && !b.artefact.component_name) return -1
-    if (b.artefact.component_name && !a.artefact.component_name) return 1
-
-    // if one rescoring has component scope, use the other one
-    if (a.artefact.artefact.artefact_name && !b.artefact.artefact.artefact_name) return -1
-    if (b.artefact.artefact.artefact_name && !a.artefact.artefact.artefact_name) return 1
-
-    // if one rescoring has artefact scope, use the other one
-    if (a.artefact.artefact.artefact_version && !b.artefact.artefact.artefact_version) return -1
-    if (b.artefact.artefact.artefact_version && !a.artefact.artefact.artefact_version) return 1
-
-    // if both rescorings share the same scope, use the latest one
-    return new Date(b.meta.creation_date) - new Date(a.meta.creation_date)
-  })
-}
 
 export const mostSpecificRescoring = (rescorings) => {
   if (!rescorings?.length > 0) return null
 
-  return orderRescoringsBySpecificity(rescorings)[0]
+  return rescorings.sort((a, b) => {
+    return new Date(b.meta.creation_date) - new Date(a.meta.creation_date)
+  })[0]
 }
 
 
 export const filterRescoringsForFinding = (finding, rescorings) => {
+  const findingExtraIdentity = {...finding.artefact.artefact.artefact_extra_id}
+  delete findingExtraIdentity.version
+
   return rescorings.filter((rescoring) => {
     if (rescoring.data.referenced_type !== finding.meta.type) return false
-    if (rescoring.artefact.artefact_kind !== finding.artefact.artefact_kind) return false
-    if (rescoring.artefact.artefact.artefact_type !== finding.artefact.artefact.artefact_type) return false
+    if (
+      rescoring.artefact.artefact_kind
+      && rescoring.artefact.artefact_kind !== finding.artefact.artefact_kind
+    ) return false
+    if (
+      rescoring.artefact.artefact.artefact_type
+      && rescoring.artefact.artefact.artefact_type !== finding.artefact.artefact.artefact_type
+    ) return false
     if (
       rescoring.artefact.component_name
       && rescoring.artefact.component_name !== finding.artefact.component_name
@@ -189,10 +182,11 @@ export const filterRescoringsForFinding = (finding, rescorings) => {
       rescoring.artefact.artefact.artefact_version
       && rescoring.artefact.artefact.artefact_version !== finding.artefact.artefact.artefact_version
     ) return false
+    const rescoringExtraIdentity = {...rescoring.artefact.artefact.artefact_extra_id}
+    delete rescoringExtraIdentity.version
     if (
-      Object.keys(rescoring.artefact.artefact.artefact_extra_id).length > 0
-      && normaliseExtraIdentity(rescoring.artefact.artefact.artefact_extra_id)
-        !== normaliseExtraIdentity(finding.artefact.artefact.artefact_extra_id)
+      Object.keys(rescoringExtraIdentity).length > 0
+      && normaliseExtraIdentity(rescoringExtraIdentity) !== normaliseExtraIdentity(findingExtraIdentity)
     ) return false
 
     if (finding.meta.type === FINDING_TYPES.VULNERABILITY) {
