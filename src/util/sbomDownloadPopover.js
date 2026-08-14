@@ -34,31 +34,27 @@ import { hasUserAccess, normaliseExtraIdentity } from '../util'
 const POLL_INTERVAL_MS = 10000
 
 const SUPPORTED_ACCESS_TYPES = [
-  'ociRegistry',
   'localBlob/v1',
+  'ociBlob/v1',
+  'ociRegistry',
   's3',
 ]
 
-const SUPPORTED_ARTEFACT_TYPES_BY_ACCESS_TYPE = {
-  'ociRegistry': ['ociImage', 'ociArtifact'],
-  'localBlob/v1': ['directoryTree', 'executable'],
-  's3': ['application/tar', 'application/x-tar'],
-}
+const SUPPORTED_ARTEFACT_TYPES = [
+  'application/tar',
+  'application/x-tar',
+  'directoryTree',
+  'executable',
+  'ociArtifact/v1',
+  'ociImage',
+]
 
 const isResourceSupported = (resource) => {
   const accessType = resource?.access?.type
   const artefactType = resource?.type
 
   if (accessType && !SUPPORTED_ACCESS_TYPES.includes(accessType)) return false
-
-  if (accessType && artefactType) {
-    const supportedArtefactTypes = SUPPORTED_ARTEFACT_TYPES_BY_ACCESS_TYPE[accessType]
-
-    if (
-      supportedArtefactTypes
-      && !supportedArtefactTypes.find((type) => artefactType.startsWith(type))
-    ) return false
-  }
+  if (artefactType && !SUPPORTED_ARTEFACT_TYPES.find((type) => artefactType.startsWith(type))) return false
 
   return true
 }
