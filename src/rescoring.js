@@ -2035,12 +2035,6 @@ const Finding = ({
           }
         </Typography>
       </div>
-      {
-        finding.fixed_version && <div style={{ display: 'flex' }}>
-          <Typography variant='inherit' marginRight='0.4rem'>Fixed in:</Typography>
-          <Typography variant='inherit'>{finding.fixed_version}</Typography>
-        </div>
-      }
     </Stack>
 
   } else if (rescoring.finding_type === FINDING_TYPES.MALWARE) {
