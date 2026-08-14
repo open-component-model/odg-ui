@@ -2017,7 +2017,7 @@ const Finding = ({
             }
           </Link>
         </Tooltip>
-        <VulnerabilityExtraInfo vector={finding.cvss} filesystemPaths={finding.filesystem_paths}/>
+        {finding.cvss && <VulnerabilityExtraInfo vector={finding.cvss} filesystemPaths={finding.filesystem_paths}/>}
       </div>
       <div style={{ display: 'flex' }}>
         <Typography variant='inherit' marginRight='0.4rem'>Original:</Typography>
