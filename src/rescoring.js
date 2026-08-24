@@ -38,10 +38,6 @@ import {
   TextField,
   Tooltip,
   Typography,
-  Switch,
-  FormGroup,
-  FormControlLabel,
-  FormLabel,
   Alert,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
@@ -184,15 +180,21 @@ const scopedComponentArtefactId = ({
   artefact,
   artefactKind,
 }) => {
+  const extraIdentity = {...artefact.extraIdentity}
+
+  if (scope === scopeOptions.ARTEFACT) {
+    delete extraIdentity.version
+  }
+
   return {
     component_name: [scopeOptions.COMPONENT, scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? component.name : null,
     component_version: scopeOptions.SINGLE === scope && component.version !== 'greatest' ? component.version : null,
-    artefact_kind: artefactKind,
+    artefact_kind: [scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? artefactKind : null,
     artefact: {
       artefact_name: [scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? artefact.name : null,
       artefact_version: scopeOptions.SINGLE === scope ? artefact.version : null,
-      artefact_type: artefact.type,
-      artefact_extra_id: scopeOptions.SINGLE === scope ? artefact.extraIdentity : {},
+      artefact_type: [scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? artefact.type : null,
+      artefact_extra_id: [scopeOptions.ARTEFACT, scopeOptions.SINGLE].includes(scope) ? extraIdentity : {},
     },
   }
 }
@@ -527,7 +529,7 @@ const RescoringFilterOption = ({
     </li>
   }
 
-  return <Stack direction='column' spacing={2} sx={{width: '20vw'}}>
+  return <Stack direction='column' spacing={2} sx={{width: '28vw'}}>
     <Typography>
       {title}
     </Typography>
@@ -618,11 +620,8 @@ const RescoringFilter = ({
   updateFilter,
   rescoringsLoading,
   sprintsLoading,
-  toggleRescored,
   rescorings,
 }) => {
-  const countRescored = rescorings.filter(rescoring => rescoring.applicable_rescorings.length !== 0).length
-
   return <Stack direction='row' spacing={5} display='flex' alignItems='center' justifyContent='center'>
     <FormControl variant='standard' sx={{ width: '10vw'}}>
       <InputLabel>Finding Type</InputLabel>
@@ -679,24 +678,6 @@ const RescoringFilter = ({
       title='Due Date'
       defaultSelection={preSelectedSprints}
     />
-    <Divider
-      orientation='vertical'
-      flexItem
-    />
-    <FormGroup sx={{width: '15vw'}}>
-      <FormLabel>
-        Hide findings
-      </FormLabel>
-      <FormControlLabel
-        control={
-          <Switch
-            onChange={(e, s) => toggleRescored(e, s)}
-            disabled={rescoringsLoading}
-          />
-        }
-        label={`with rescorings ${rescoringsLoading ? '' : `(${countRescored})`}`}
-      />
-    </FormGroup>
   </Stack>
 }
 RescoringFilter.displayName = 'RescoringFilter'
@@ -710,7 +691,6 @@ RescoringFilter.propTypes = {
   updateFilter: PropTypes.func.isRequired,
   rescoringsLoading: PropTypes.bool.isRequired,
   sprintsLoading: PropTypes.bool.isRequired,
-  toggleRescored: PropTypes.func.isRequired,
   rescorings: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
@@ -1333,6 +1313,14 @@ const Subject = ({
     return <Stack>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Typography variant='inherit'>{finding.sub_type}</Typography>
+        <OcmNodeDetails ocmNode={ocmNode} ocmRepo={ocmRepo} iconProps={{ sx: { height: '1rem' } }}/>
+      </div>
+    </Stack>
+
+  } else if (rescoring.finding_type === FINDING_TYPES.CODEQL) {
+    return <Stack>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Typography variant='inherit'>{finding.language}</Typography>
         <OcmNodeDetails ocmNode={ocmNode} ocmRepo={ocmRepo} iconProps={{ sx: { height: '1rem' } }}/>
       </div>
     </Stack>
@@ -2017,7 +2005,7 @@ const Finding = ({
             }
           </Link>
         </Tooltip>
-        <VulnerabilityExtraInfo vector={finding.cvss} filesystemPaths={finding.filesystem_paths}/>
+        {finding.cvss && <VulnerabilityExtraInfo vector={finding.cvss} filesystemPaths={finding.filesystem_paths}/>}
       </div>
       <div style={{ display: 'flex' }}>
         <Typography variant='inherit' marginRight='0.4rem'>Original:</Typography>
@@ -2031,7 +2019,7 @@ const Finding = ({
         <Typography variant='inherit' marginRight='0.4rem'>CVSS v3:</Typography>
         <Typography variant='inherit' color={`${categorisationValueToColor(categorisation.value)}.main`}>
           {
-            finding.cvss_v3_score
+            finding.cvss_score ?? finding.cvss_v3_score
           }
         </Typography>
       </div>
@@ -2101,6 +2089,19 @@ const Finding = ({
         </Typography>
       </div>
       <Typography variant='inherit' marginRight='0.4rem'>{finding.sast_status}</Typography>
+    </Stack>
+
+  } else if (rescoring.finding_type === FINDING_TYPES.CODEQL) {
+    return <Stack spacing={0.5}>
+      <div style={{ display: 'flex' }}>
+        <Typography variant='inherit' marginRight='0.4rem'>Original:</Typography>
+        <Typography variant='inherit' color={`${categorisationValueToColor(categorisation.value)}.main`}>
+          {
+            categorisation.display_name
+          }
+        </Typography>
+      </div>
+      <Typography variant='inherit' marginRight='0.4rem'>{finding.codeql_status}</Typography>
     </Stack>
 
   } else if (rescoring.finding_type === FINDING_TYPES.CRYPTO) {
@@ -2880,6 +2881,17 @@ const RescoringContent = ({
       }).value,
     }
 
+    const codeqlAccesses = {
+      [orderAttributes.SUBJECT]: rescoring.finding.language,
+      [orderAttributes.FINDING]: rescoring.finding.codeql_status,
+      [orderAttributes.SPRINT]: rescoring.sprint ? new Date(rescoring.sprint.end_date) : new Date(8640000000000000),
+      [orderAttributes.CURRENT]: categoriseRescoringProposal({rescoring, findingCfg}).value,
+      [orderAttributes.RESCORED]: findCategorisationById({
+        id: rescoring.severity,
+        findingCfg: findingCfg,
+      }).value,
+    }
+
     const cryptoAccess = {
       [orderAttributes.SUBJECT]: rescoring.finding.asset?.names.sort(),
       [orderAttributes.FINDING]: `${FINDING_TYPES.CRYPTO}_${rescoring.finding.standard}_${rescoring.finding.asset?.asset_type}`,
@@ -2933,6 +2945,8 @@ const RescoringContent = ({
       return malwareAccess[desired]
     } else if (rescoringType === FINDING_TYPES.SAST) {
       return sastAccesses[desired]
+    } else if (rescoringType === FINDING_TYPES.CODEQL) {
+      return codeqlAccesses[desired]
     } else if (rescoringType === FINDING_TYPES.CRYPTO) {
       return cryptoAccess[desired]
     } else if (rescoringType === FINDING_TYPES.DIKI) {
@@ -3371,6 +3385,12 @@ const Rescore = ({
           sast_status: rescoring.finding.sast_status,
           sub_type: rescoring.finding.sub_type,
         }
+      } else if (type === FINDING_TYPES.CODEQL) {
+        return {
+          codeql_status: rescoring.finding.codeql_status,
+          repo_url: rescoring.finding.repo_url,
+          language: rescoring.finding.language,
+        }
       } else if (type === FINDING_TYPES.CRYPTO) {
         return {
           standard: rescoring.finding.standard,
@@ -3681,13 +3701,6 @@ const RescoringModal = ({
     e.stopPropagation() // stop interaction with background
   }
 
-  const toggleRescored = React.useCallback((event, toggled) => {
-    updateFilter('toggleRescored', (rescoring) => {
-      if (!toggled) return true
-      return rescoring.applicable_rescorings.length === 0
-    })
-  }, [updateFilter] )
-
   const searchParamContext = React.useContext(SearchParamContext)
   const preSelectedSprints = searchParamContext.getAll('sprints')
 
@@ -3764,7 +3777,6 @@ const RescoringModal = ({
           updateFilter={updateFilter}
           rescoringsLoading={rescoringsLoading}
           sprintsLoading={sprintsLoading}
-          toggleRescored={toggleRescored}
           rescorings={rescoringsForType ?? []}
         />
       </Grid>

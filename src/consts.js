@@ -199,6 +199,7 @@ export const COMPLIANCE_TOOLS = {
   BDBA: 'bdba',
   BLACKDUCK: 'blackduck',
   CLAMAV: 'clamav',
+  CODEQL: 'codeql',
   CRYPTO: 'crypto',
   ISSUE_REPLICATOR: 'issueReplicator',
   OSID: 'osid',
