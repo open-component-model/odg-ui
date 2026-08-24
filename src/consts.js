@@ -205,7 +205,8 @@ export const COMPLIANCE_TOOLS = {
   OSID: 'osid',
   RESPONSIBLES: 'responsibles',
   SAST: 'sast',
-  SBOM_GENERATOR: 'sbomGenerator'
+  SBOM_GENERATOR: 'sbomGenerator',
+  TRIVY: 'trivy',
 }
 
 export const PRIORITIES = {

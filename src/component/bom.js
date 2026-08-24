@@ -2007,6 +2007,7 @@ const ComplianceCell = ({
   const lastSastScan = findLastScan(complianceFiltered, datasources.SAST)
   const lastCodeqlScan = findLastScan(complianceFiltered, datasources.CODEQL)
   const lastIPScan = findLastScan(complianceFiltered, datasources.BLACKDUCK)
+  const lastTrivyScan = findLastScan(complianceFiltered, datasources.TRIVY)
 
   const retrieveCryptoFindings = retrieveFindingsForType({
     findingType: FINDING_TYPES.CRYPTO,
@@ -2118,6 +2119,19 @@ const ComplianceCell = ({
           type={FINDING_TYPES.VULNERABILITY}
           categorisation={getCategorisation(FINDING_TYPES.VULNERABILITY)}
           lastScan={lastBdbaScan}
+          findingCfgs={findingCfgs}
+          fetchComplianceSummary={fetchComplianceSummary}
+          isLoading={state.isLoading}
+        />
+      }
+      {
+        extensionsCfg?.trivy?.enabled && ocmNode.artefactKind === ARTEFACT_KIND.RESOURCE && retrieveVulnerabilityFindings && <RescoringCell
+          ocmNodes={ocmNodes}
+          ocmRepo={ocmRepo}
+          datasource={datasources.TRIVY}
+          type={FINDING_TYPES.VULNERABILITY}
+          categorisation={getCategorisation(FINDING_TYPES.VULNERABILITY)}
+          lastScan={lastTrivyScan}
           findingCfgs={findingCfgs}
           fetchComplianceSummary={fetchComplianceSummary}
           isLoading={state.isLoading}

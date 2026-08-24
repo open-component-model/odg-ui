@@ -97,6 +97,7 @@ const datasources = {
   BLACKDUCK: 'blackduck',
   SBOM_GENERATOR: 'sbom-generator',
   DELIVERY_DASHBOARD: 'delivery-dashboard',
+  TRIVY: 'trivy',
 }
 Object.freeze(datasources)
 
