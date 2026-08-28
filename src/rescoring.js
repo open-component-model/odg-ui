@@ -56,6 +56,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import PendingActionsIcon from '@mui/icons-material/PendingActions'
+import TipsAndUpdatesOutlinedIcon from '@mui/icons-material/TipsAndUpdatesOutlined'
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat'
 import UndoIcon from '@mui/icons-material/Undo'
 import { DateTime } from 'luxon'
@@ -896,6 +897,30 @@ VulnerabilityExtraInfo.displayName = 'VulnerabilityExtraInfo'
 VulnerabilityExtraInfo.propTypes = {
   vector: PropTypes.string.isRequired,
   filesystemPaths: PropTypes.arrayOf(PropTypes.object).isRequired,
+}
+
+
+const RecommendationInfo = ({ recommendation }) => {
+  return <ExtraWideTooltip
+    title={
+      <div style={{ overflowY: 'auto', maxHeight: '15rem' }}>
+        <Typography
+          variant='inherit'
+          sx={{ fontWeight: 'bold' }}
+          marginBottom='0.5rem'
+        >
+          Recommendation
+        </Typography>
+        <Typography variant='inherit'>{recommendation}</Typography>
+      </div>
+    }
+  >
+    <TipsAndUpdatesOutlinedIcon sx={{ height: '1rem' }}/>
+  </ExtraWideTooltip>
+}
+RecommendationInfo.displayName = 'RecommendationInfo'
+RecommendationInfo.propTypes = {
+  recommendation: PropTypes.string.isRequired,
 }
 
 
@@ -2006,6 +2031,7 @@ const Finding = ({
           </Link>
         </Tooltip>
         {finding.cvss && <VulnerabilityExtraInfo vector={finding.cvss} filesystemPaths={finding.filesystem_paths}/>}
+        {finding.recommendation && <RecommendationInfo recommendation={finding.recommendation}/>}
       </div>
       <div style={{ display: 'flex' }}>
         <Typography variant='inherit' marginRight='0.4rem'>Original:</Typography>
@@ -2016,13 +2042,19 @@ const Finding = ({
         </Typography>
       </div>
       <div style={{ display: 'flex' }}>
-        <Typography variant='inherit' marginRight='0.4rem'>CVSS v3:</Typography>
+        <Typography variant='inherit' marginRight='0.4rem'>
+          {finding.cvss ? 'CVSS v3:' : 'Score:'}
+        </Typography>
         <Typography variant='inherit' color={`${categorisationValueToColor(categorisation.value)}.main`}>
           {
             finding.cvss_score ?? finding.cvss_v3_score
           }
         </Typography>
       </div>
+      {finding.rating_source && <div style={{ display: 'flex' }}>
+        <Typography variant='inherit' marginRight='0.4rem'>Source:</Typography>
+        <Typography variant='inherit'>{finding.rating_source}</Typography>
+      </div>}
     </Stack>
 
   } else if (rescoring.finding_type === FINDING_TYPES.MALWARE) {
