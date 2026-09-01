@@ -1,11 +1,11 @@
 name: ocm.software/open-delivery-gear/ui
 resources:
   - name: busybox
-    version: 1.37.0
+    version: 1.38.0
     type: ociImage
     access:
       type: ociRegistry
-      imageReference: docker.io/library/busybox:1.37.0
+      imageReference: docker.io/library/busybox:1.38.0
     relation: external
 labels:
   - name: cloud.gardener.cnudie/responsibles
