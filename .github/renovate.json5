@@ -12,11 +12,14 @@
   'internalChecksFilter': 'strict',
   'minimumReleaseAge': '7 days',
   'branchPrefix': 'renovate/',
-  // You can build the email with this info: curl -s https://api.github.com/users/odgbot%5Bbot%5D | grep -E '"id"|"login"' — format: <id>+<slug>[bot]@users.noreply.github.com
-  'gitAuthor': 'odgbot[bot] <319464553+odgbot[bot]@users.noreply.github.com>',
-  'gitIgnoredAuthors': [
-    '319464553+odgbot[bot]@users.noreply.github.com',
-  ],
+  // Commit identity is intentionally unset: renovate runs with platformCommit
+  // and a GitHub App token, so GitHub sets the commit author and renovate
+  // auto-discovers it from the token. All fleet bots that may touch renovate
+  // branches are whitelisted via gitIgnoredAuthors in the central config. Add
+  // a repo-level gitIgnoredAuthors only if an app NOT listed centrally runs
+  // renovate here — it replaces (not extends) the central list, so repeat
+  // entries you still need. Email format: <id>+<slug>[bot]@users.noreply.github.com
+  // (id via curl -s https://api.github.com/users/odgbot%5Bbot%5D | grep '"id"').
   // drip-feed PRs (0 = unlimited) so the initial onboarding wave after
   // enabling renovate on this repo doesn't flood reviewers; renovate
   // opens more as PRs get merged
@@ -29,6 +32,13 @@
     automerge: false,
   },
   packageRules: [
+    {
+      // Majors wait as checkboxes in the dependency dashboard ("Pending
+      // Approval") instead of occupying prConcurrentLimit slots — tick one
+      // there to have its PR created when you're ready to work on it.
+      matchUpdateTypes: ['major'],
+      dependencyDashboardApproval: true,
+    },
     {
       matchUpdateTypes: ['patch'],
       automerge: true,
