@@ -585,7 +585,7 @@ const ComponentBody = ({
       />
       <a
         style={{ textDecoration: 'none', color: 'inherit' }}
-        href={componentUrl}
+        {...(isEditMode ? {} : { href: componentUrl })}
       >
         <VersionOverview isLoading />
       </a>
@@ -665,7 +665,7 @@ const ComponentBody = ({
       />
       <a
         style={{ textDecoration: 'none', color: 'inherit' }}
-        href={componentUrl}
+        {...(isEditMode ? {} : { href: componentUrl })}
       >
         {
           (isEditMode || dependencies.some((dep) => !dep.disabled)) && <DependentComponentBox sx={{
@@ -928,7 +928,7 @@ const ComponentHeader = ({
         <Grid size={8}>
           <a
             style={{ textDecoration: 'none', color: 'inherit' }}
-            href={componentUrl}
+            {...(isEditMode ? {} : { href: componentUrl })}
           >
             <Stack direction='row' spacing={1} sx={{
               justifyContent: 'center'
@@ -939,7 +939,7 @@ const ComponentHeader = ({
                 )
               }
               {
-                isError ? <Typography variant='caption'>Error fetching Component</Typography> : (isEditMode ? <form>
+                isError ? <Typography variant='caption'>Error fetching Component</Typography> : (isEditMode ? <form onSubmit={(e) => e.preventDefault()}>
                   <input type='text' onClick={(e) => e.preventDefault()} onChange={handleChangeDisplayName} defaultValue={component.displayName} maxLength={30}/>
                 </form> : <Typography style={{ fontSize: 'medium', fontWeight: 'bold' }}>
                   {component.displayName}
