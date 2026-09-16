@@ -43,7 +43,7 @@ import LaunchIcon from '@mui/icons-material/Launch'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { styled, useTheme } from '@mui/material/styles'
 
-import { DndContext, closestCenter } from '@dnd-kit/core'
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import PropTypes from 'prop-types'
 
@@ -262,6 +262,17 @@ const SpecialComponents = () => {
     })
   }, [featureRegistrationContext])
 
+  // activation constraint: only start dragging after the pointer moved a few pixels,
+  // so plain clicks on interactive elements inside sortable rows (e.g. the
+  // remove-dependency button) still work
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  )
+
   if (!specialComponentsFeature?.isAvailable || !ocmRepositoryCfgsFeature?.isAvailable) return null
 
   const findingCfgs = findingCfgsFeature?.isAvailable ? findingCfgsFeature.finding_cfgs : []
@@ -314,7 +325,7 @@ const SpecialComponents = () => {
   const specialComponentTypes = Object.keys(specialComponentsByType)
 
   return <>
-    <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+    <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter} sensors={sensors}>
       <Stack
         direction='column'
         spacing={2}
