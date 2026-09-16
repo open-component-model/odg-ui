@@ -42,8 +42,8 @@ Build the image:
 docker build --progress=plain -t odg-ui .
 ```
 
-Note: the `Build:` footer will show the literal placeholder `$build_version`, as the real
-version is only patched into `.env.production` by the CI pipeline during release builds.
+Note: the `Build:` footer will show `dev-build`, as the real version is only patched into
+`.env.production` by the CI pipeline during release builds.
 
 Start it (lighttpd serves on port 8080 inside the container, expose it e.g. on port 3000):
 
