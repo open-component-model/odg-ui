@@ -243,7 +243,8 @@ const ComponentVersionDiff = ({
     container
     spacing={3}
     sx={{
-      alignItems: 'center'
+      alignItems: 'center',
+      flexGrow: 1
     }}
   >
     <Grid size={3}>
@@ -290,6 +291,8 @@ const ComponentVersionDiff = ({
           component='a'
           href={pullRequest.html_url}
           target='_blank'
+          fullWidth
+          onClick={(event) => event.stopPropagation()}
         >
           Jump to PR #{pullRequest.number}
         </Button>
