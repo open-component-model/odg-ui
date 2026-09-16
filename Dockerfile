@@ -5,7 +5,7 @@ WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 
-COPY index.html vite.config.js ./
+COPY index.html vite.config.js .env.production ./
 COPY public ./public
 COPY src ./src
 
