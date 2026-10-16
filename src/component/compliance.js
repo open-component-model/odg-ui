@@ -996,10 +996,12 @@ const ComplianceTab = ({
         // will be filtered out.
         if (aggregatedOcmNode.responsibles === undefined || githubUserIdentifier === undefined) return true
 
+        const githubHostname = githubUserIdentifier.hostname === 'api.github.com' ? 'github.com' : githubUserIdentifier.hostname
+
         return aggregatedOcmNode.responsibles.some((responsible) => {
           return responsible.githubUsers.some((githubUser) => (
             githubUser.username.toLowerCase() === githubUserIdentifier.username.toLowerCase()
-            && githubUser.host === githubUserIdentifier.hostname
+            && githubUser.host === githubHostname
           )) || responsible.emails.some((email) => (
             email.toLowerCase() == githubUserIdentifier.email_address?.toLowerCase()
           ))
