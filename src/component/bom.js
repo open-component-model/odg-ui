@@ -283,6 +283,7 @@ const Component = React.memo(({
   addEventListener('profile', () => setProfile(localStorage.getItem(PROFILE_KEY)))
 
   const name = trimComponentName(component.name)
+  const isFailed = Boolean(component.error)
 
   const [expanded, setExpanded] = React.useState(Boolean(isParentComponent && Boolean(searchParamContext.get('rootExpanded'))))
 
@@ -310,26 +311,37 @@ const Component = React.memo(({
     <Box
       sx={{
         paddingBottom: '0.3em',
-        '&:hover': {
-          backgroundColor: alpha(theme.palette.common.black, theme.palette.mode === 'light' ? 0.15 : 1),
-        },
+        ...(!isFailed && {
+          '&:hover': {
+            backgroundColor: alpha(theme.palette.common.black, theme.palette.mode === 'light' ? 0.15 : 1),
+          },
+        }),
       }}
     >
       <Accordion
         // manual expansion control required to prevent trigger on MetadataViewerPopover events
-        expanded={expanded}
-        onClick={() => setExpanded(!expanded)}
+        expanded={!isFailed && expanded}
+        onClick={() => !isFailed && setExpanded(!expanded)}
+        {...(isFailed && { sx: { '& .MuiAccordionSummary-root': { cursor: 'default' } } })}
         slotProps={{
           transition: { unmountOnExit: true }
         }}
       >
-        <AccordionSummary expandIcon={<ExpandMoreIcon {...isParentComponent ? {sx: {color: theme.bomButton}} : {}}/>} slotProps={{ root: { component: 'div' } }}>
+        <AccordionSummary
+          disabled={isFailed}
+          expandIcon={<ExpandMoreIcon sx={{color: isFailed ? 'transparent' : isParentComponent ? theme.bomButton : undefined}}/>}
+          slotProps={{ root: { component: 'div' } }}>
           <Grid container sx={{
             alignItems: 'center',
             flexGrow: 1
           }}>
             <Grid {...isParentComponent ? {sx: {flexGrow: '0.05'}} : {size: 7}} >
-              <Typography variant='body1' sx={{fontWeight: isParentComponent ? 'bold' : 1}}>
+              <Typography variant='body1' sx={{fontWeight: isParentComponent ? 'bold' : 1, display: 'flex', alignItems: 'center', gap: '0.4em'}}>
+                {isFailed && <Tooltip title={component.error}>
+                  <span style={{pointerEvents: 'auto', display: 'inline-flex'}}>
+                    <WarningAmberIcon color='warning' fontSize='small'/>
+                  </span>
+                </Tooltip>}
                 <Tooltip
                   title={component.name}
                 >
@@ -389,7 +401,7 @@ const Component = React.memo(({
             >
               <Grid size={isParentComponent ? 1 : 2}>
                 {
-                  findingCfgs.length > 0 && <ComponentChip
+                  !isFailed && findingCfgs.length > 0 && <ComponentChip
                     component={component}
                     complianceSummaryFetchDetails={complianceSummaryFetchDetails}
                     findingCfgs={findingCfgs}

@@ -459,17 +459,20 @@ const useFetchBom = ({
   componentVersion,
   ocmRepo,
   populate,
+  ignoreMissing = true,
 }) => {
   const params = React.useMemo(() => ({
     componentName: componentName,
     componentVersion: componentVersion,
     ocmRepoUrl: ocmRepo,
     populate: populate,
+    ignoreMissing: ignoreMissing,
   }), [
     componentName,
     componentVersion,
     ocmRepo,
     populate,
+    ignoreMissing,
   ])
 
   return _useFetch({

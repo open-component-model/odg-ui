@@ -521,20 +521,20 @@ const ComplianceToolPopover = ({
     setOcmNodes(components.reduce((nodes, component) => {
       return [
         ...nodes,
-        ...component.resources.map((resource) => {
+        ...component.resources ? component.resources.map((resource) => {
           return new OcmNode(
             [component],
             resource,
             ARTEFACT_KIND.RESOURCE,
           )
-        }),
-        ...component.sources.map((source) => {
+        }) : [],
+        ...component.sources ? component.sources.map((source) => {
           return new OcmNode(
             [component],
             source,
             ARTEFACT_KIND.SOURCE,
           )
-        }),
+        }) : [],
       ]
     }, []))
   }, [dependencies, state.isLoading, state.error, service, servicesState.isLoading, servicesState.error])

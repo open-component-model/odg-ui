@@ -109,7 +109,7 @@ const SbomDownloadPopover = ({
   const sbomReadiness = React.useMemo(() => {
     if (!bom?.componentDependencies || !scanInfos) return null
 
-    const componentReadiness = bom.componentDependencies.flatMap((c) =>
+    const componentReadiness = bom.componentDependencies.filter((c) => !c.error).flatMap((c) =>
       c.resources.map((resource) => {
         const isSupported = isResourceSupported(resource)
 

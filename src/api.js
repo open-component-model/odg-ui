@@ -223,6 +223,7 @@ const ocmComponentDependencies = async ({
   componentVersion,
   ocmRepoUrl,
   populate,
+  ignoreMissing,
 }) => {
   const url = new URL(routes.ocm.component.dependencies())
   appendPresentParams(url, {
@@ -230,6 +231,7 @@ const ocmComponentDependencies = async ({
     version: componentVersion,
     ocm_repo_url: ocmRepoUrl,
     populate: populate,
+    ignore_missing: ignoreMissing,
   })
 
   return await _toJson(withAuth(url))
