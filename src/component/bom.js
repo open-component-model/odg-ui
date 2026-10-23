@@ -293,6 +293,7 @@ const Component = React.memo(({
     recursionDepth: 0,
     ocmRepo: ocmRepo,
     profile: profile,
+    isError: isFailed,
   })
 
   const complianceSummaryFetchDetails = React.useMemo(() => {

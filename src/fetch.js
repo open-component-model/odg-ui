@@ -370,6 +370,7 @@ const useFetchComplianceSummary = ({
   ocmRepo,
   recursionDepth,
   profile,
+  isError = false,
 }) => {
   const featureRegistrationContext = React.useContext(FeatureRegistrationContext)
   const [deliveryDbFeature, setDeliveryDbFeature] = React.useState()
@@ -383,8 +384,8 @@ const useFetchComplianceSummary = ({
   }, [featureRegistrationContext])
 
   const fetchCondition = React.useCallback(() => {
-    return deliveryDbFeature?.isAvailable
-  }, [deliveryDbFeature])
+    return !isError && deliveryDbFeature?.isAvailable
+  }, [isError, deliveryDbFeature])
 
   const params = React.useMemo(() => ({
     componentName,
