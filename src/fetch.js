@@ -151,14 +151,7 @@ const _useFetch = ({
               isLoading: false,
               error: error.toString(),
             })
-            showSnackbar && enqueueSnackbar(
-              errorMessage,
-              {
-                ...errorSnackbarProps,
-                details: error.toString(),
-                onRetry: () => fetchData(),
-              }
-            )
+            // suppress snackbar here: the instance that made the live request already showed it
           }
           isFetching.current = false
           return
@@ -370,21 +363,22 @@ const useFetchComplianceSummary = ({
   ocmRepo,
   recursionDepth,
   profile,
+  error = false,
 }) => {
   const featureRegistrationContext = React.useContext(FeatureRegistrationContext)
-  const [deliveryDbFeature, setDeliveryDbFeature] = React.useState()
+  const [deliveryDbAvailable, setDeliveryDbAvailable] = React.useState(false)
 
   React.useEffect(() => {
     return registerCallbackHandler({
       featureRegistrationContext: featureRegistrationContext,
       featureName: features.DELIVERY_DB,
-      callback: ({feature}) => setDeliveryDbFeature(feature),
+      callback: ({feature}) => setDeliveryDbAvailable(Boolean(feature?.isAvailable)),
     })
   }, [featureRegistrationContext])
 
   const fetchCondition = React.useCallback(() => {
-    return deliveryDbFeature?.isAvailable
-  }, [deliveryDbFeature])
+    return !error && deliveryDbAvailable
+  }, [error, deliveryDbAvailable])
 
   const params = React.useMemo(() => ({
     componentName,
@@ -493,19 +487,19 @@ const useFetchQueryMetadata = ({
   referenced_types = React.useMemo(() => {[]}, []),
 }) => {
   const featureRegistrationContext = React.useContext(FeatureRegistrationContext)
-  const [deliveryDbFeature, setDeliveryDbFeature] = React.useState()
+  const [deliveryDbAvailable, setDeliveryDbAvailable] = React.useState(false)
 
   React.useEffect(() => {
     return registerCallbackHandler({
       featureRegistrationContext: featureRegistrationContext,
       featureName: features.DELIVERY_DB,
-      callback: ({feature}) => setDeliveryDbFeature(feature),
+      callback: ({feature}) => setDeliveryDbAvailable(Boolean(feature?.isAvailable)),
     })
   }, [featureRegistrationContext])
 
   const fetchCondition = React.useCallback(() => {
-    return deliveryDbFeature?.isAvailable && artefacts?.length > 0
-  }, [deliveryDbFeature, artefacts])
+    return deliveryDbAvailable && artefacts?.length > 0
+  }, [deliveryDbAvailable, artefacts])
 
   const params = React.useMemo(() => ({
     artefacts,
