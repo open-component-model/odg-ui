@@ -136,6 +136,7 @@ jobs:
           integrity_requirement: high
           availability_requirement: high
       prebuild-hook: |
+        git lfs pull
         sed -i "s/VITE_BUILD_VERSION=.*/VITE_BUILD_VERSION='${{ needs.prepare.outputs.version }}'/" .env.production
 
   helmchart:

@@ -14,31 +14,16 @@ const NotFoundPage = ({ reason }) => {
       style: { height: '100%' },
       src: octo,
       alt: 'sad octo',
-      link: (
-        <a href='https://www.freepik.com/vectors/background'>
-          Background vector created by freepik - www.freepik.com
-        </a>
-      ),
     },
     {
       style: { height: '100%' },
       src: robo,
       alt: 'sad robo',
-      link: (
-        <a href='https://www.freepik.com/vectors/background'>
-          Background vector created by freepik - www.freepik.com
-        </a>
-      ),
     },
     {
       style: { height: '95%' },
       src: box,
       alt: 'sad box',
-      link: (
-        <a href='https://www.freepik.com/vectors/business'>
-          Business vector created by freepik - www.freepik.com
-        </a>
-      ),
     },
   ]
 
@@ -70,11 +55,6 @@ const NotFoundPage = ({ reason }) => {
           </div>
         </Grid>
       }
-      <Grid size={12}>
-        <div style={{ bottom: '0', right: '0', position: 'fixed' }}>
-          {image.link}
-        </div>
-      </Grid>
     </Grid>
   )
 }
