@@ -151,14 +151,7 @@ const _useFetch = ({
               isLoading: false,
               error: error.toString(),
             })
-            showSnackbar && enqueueSnackbar(
-              errorMessage,
-              {
-                ...errorSnackbarProps,
-                details: error.toString(),
-                onRetry: () => fetchData(),
-              }
-            )
+            // suppress snackbar here: the instance that made the live request already showed it
           }
           isFetching.current = false
           return
