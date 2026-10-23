@@ -280,7 +280,11 @@ const Component = React.memo(({
   const searchParamContext = React.useContext(SearchParamContext)
   const theme = useTheme()
   const [profile, setProfile] = React.useState(localStorage.getItem(PROFILE_KEY))
-  addEventListener('profile', () => setProfile(localStorage.getItem(PROFILE_KEY)))
+  React.useEffect(() => {
+    const handler = () => setProfile(localStorage.getItem(PROFILE_KEY))
+    addEventListener('profile', handler)
+    return () => removeEventListener('profile', handler)
+  }, [])
 
   const name = trimComponentName(component.name)
   const isFailed = Boolean(component.error)

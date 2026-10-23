@@ -366,19 +366,19 @@ const useFetchComplianceSummary = ({
   isError = false,
 }) => {
   const featureRegistrationContext = React.useContext(FeatureRegistrationContext)
-  const [deliveryDbFeature, setDeliveryDbFeature] = React.useState()
+  const [deliveryDbAvailable, setDeliveryDbAvailable] = React.useState(false)
 
   React.useEffect(() => {
     return registerCallbackHandler({
       featureRegistrationContext: featureRegistrationContext,
       featureName: features.DELIVERY_DB,
-      callback: ({feature}) => setDeliveryDbFeature(feature),
+      callback: ({feature}) => setDeliveryDbAvailable(Boolean(feature?.isAvailable)),
     })
   }, [featureRegistrationContext])
 
   const fetchCondition = React.useCallback(() => {
-    return !isError && deliveryDbFeature?.isAvailable
-  }, [isError, deliveryDbFeature])
+    return !isError && deliveryDbAvailable
+  }, [isError, deliveryDbAvailable])
 
   const params = React.useMemo(() => ({
     componentName,
@@ -487,19 +487,19 @@ const useFetchQueryMetadata = ({
   referenced_types = React.useMemo(() => {[]}, []),
 }) => {
   const featureRegistrationContext = React.useContext(FeatureRegistrationContext)
-  const [deliveryDbFeature, setDeliveryDbFeature] = React.useState()
+  const [deliveryDbAvailable, setDeliveryDbAvailable] = React.useState(false)
 
   React.useEffect(() => {
     return registerCallbackHandler({
       featureRegistrationContext: featureRegistrationContext,
       featureName: features.DELIVERY_DB,
-      callback: ({feature}) => setDeliveryDbFeature(feature),
+      callback: ({feature}) => setDeliveryDbAvailable(Boolean(feature?.isAvailable)),
     })
   }, [featureRegistrationContext])
 
   const fetchCondition = React.useCallback(() => {
-    return deliveryDbFeature?.isAvailable && artefacts?.length > 0
-  }, [deliveryDbFeature, artefacts])
+    return deliveryDbAvailable && artefacts?.length > 0
+  }, [deliveryDbAvailable, artefacts])
 
   const params = React.useMemo(() => ({
     artefacts,
