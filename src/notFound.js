@@ -1,49 +1,26 @@
 import React from 'react'
 
-import { Alert, Grid } from '@mui/material'
+import {
+  Alert,
+  Grid,
+  Paper,
+  Typography,
+} from '@mui/material'
 
 import PropTypes from 'prop-types'
 
-import octo from './resources/notFoundOcto.png'
-import robo from './resources/notFoundRobo.png'
-import box from './resources/notFoundBox.png'
+import odgLogo from './resources/odg-logo.svg'
 
 const NotFoundPage = ({ reason }) => {
-  const images = [
-    {
-      style: { height: '100%' },
-      src: octo,
-      alt: 'sad octo',
-      link: (
-        <a href='https://www.freepik.com/vectors/background'>
-          Background vector created by freepik - www.freepik.com
-        </a>
-      ),
-    },
-    {
-      style: { height: '100%' },
-      src: robo,
-      alt: 'sad robo',
-      link: (
-        <a href='https://www.freepik.com/vectors/background'>
-          Background vector created by freepik - www.freepik.com
-        </a>
-      ),
-    },
-    {
-      style: { height: '95%' },
-      src: box,
-      alt: 'sad box',
-      link: (
-        <a href='https://www.freepik.com/vectors/business'>
-          Business vector created by freepik - www.freepik.com
-        </a>
-      ),
-    },
-  ]
-
-  const image = images[Math.floor(Math.random() * images.length)]
-
+  const digitStyle = {
+    fontSize: '9rem',
+    fontWeight: 800,
+    fontFamily: 'system-ui, sans-serif',
+    lineHeight: 1,
+    color: '#1348FF',
+    letterSpacing: '-0.04em',
+    userSelect: 'none',
+  }
   return (
     <Grid container>
       <Grid size={12}>
@@ -51,10 +28,35 @@ const NotFoundPage = ({ reason }) => {
           style={{
             height: '65vh',
             display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <img style={image.style} src={image.src} alt={image.alt} />
+          <Paper
+            elevation={4}
+            style={{
+              borderRadius: '20px',
+              padding: '3rem 4rem',
+              transform: 'rotate(-2deg)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span style={digitStyle}>4</span>
+              <img src={odgLogo} alt='ODG' width='90' />
+              <span style={digitStyle}>4</span>
+            </div>
+            <Typography
+              variant='h6'
+              style={{ letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.85rem', color: '#6b8cff' }}
+            >
+              Page not found
+            </Typography>
+          </Paper>
         </div>
       </Grid>
       {
@@ -62,7 +64,7 @@ const NotFoundPage = ({ reason }) => {
           <div
             style={{
               display: 'flex',
-              paddingTop: '4em',
+              paddingTop: '2em',
               justifyContent: 'center',
             }}
           >
@@ -70,11 +72,6 @@ const NotFoundPage = ({ reason }) => {
           </div>
         </Grid>
       }
-      <Grid size={12}>
-        <div style={{ bottom: '0', right: '0', position: 'fixed' }}>
-          {image.link}
-        </div>
-      </Grid>
     </Grid>
   )
 }
