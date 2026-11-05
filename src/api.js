@@ -142,9 +142,6 @@ export const routes = {
     queryAttributes: api('artefacts/metadata/query-attributes'),
     queryBySearchExpression: api('artefacts/metadata/query/by-search-expression'),
   },
-  os: {
-    branches: (name) => api(`os/${name}/branches`),
-  },
   ocm: {
     component: {
       base: api('ocm/component'),
@@ -405,30 +402,6 @@ const artefactsQueryMetadata = async ({
   return artefactMetadata
 }
 
-/**
- * Retrieves Promise from fetching os branch information.
- * null if no information is available.
- *
- * @param {String} name
- * @returns {(Promise|null)}
- */
-const osBranches = async (name) => {
-  const route = routes.os.branches(name)
-
-  const resp = await withAuth(route, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-
-  // 404 is a valid case, as there could be no branch os information.
-  // Temporarily, 400 instead of 404 is returned.
-  // TODO: 400 should raise an expception (once adjusted in service)
-  if ([400, 404].includes(resp.status)) return null
-
-  return _toJson(resp)
-}
 
 const specialComponentCurrentDependencies = async ({id}) => {
   const url = new URL(routes.specialComponent.currentDependencies)
@@ -636,7 +609,6 @@ export {
   specialComponentCurrentDependencies,
   fetchJoke,
   artefactsQueryMetadata,
-  osBranches,
   deliverySprintInfosCurrent,
   rescore,
   serviceExtensions,
