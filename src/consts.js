@@ -47,6 +47,13 @@ export const servicesTabConfig = {
 }
 Object.freeze(servicesTabConfig)
 
+export const backlogItemPhases = {
+  FAILED: 'Failed',
+  PENDING: 'Pending',
+  PROCESSING: 'Processing',
+}
+Object.freeze(backlogItemPhases)
+
 export const fetchBomPopulate = {
   ALL: 'all',
   COMPONENT_REFS: 'componentReferences',

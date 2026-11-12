@@ -48,6 +48,7 @@ import CopyOnClickChip from '../util/copyOnClickChip'
 import { PersistentDrawerLeft } from '../layout'
 import { TabPanel } from '../component/tabs'
 import {
+  backlogItemPhases,
   COMPLIANCE_TOOLS,
   errorSnackbarProps,
   PRIORITIES,
@@ -65,6 +66,7 @@ import {
 import { routes, serviceExtensions } from '../api'
 import { ServiceStatus } from './service'
 import { ConfigContext, SearchParamContext } from '../App'
+import ExtraWideTooltip from '../util/extraWideTooltip'
 import MissingPermissionsButton from '../util/missingPermissionsButton'
 
 
@@ -242,6 +244,8 @@ const BacklogTab = ({
         position: idx + 1,
         claimed: Boolean(backlogItemClaimedAt(backlogItem)),
         claimedAt: backlogItemClaimedAt(backlogItem),
+        phase: backlogItem.status?.phase,
+        error: backlogItem.status?.error,
       }
     }).filter((backlogItem) => {
       return backlogItem.spec.priority >= priority.value
@@ -249,16 +253,7 @@ const BacklogTab = ({
   }, [priority, backlogItems, backlogItemsState.isLoading, backlogItemsState.error])
 
   const backlogItemClaimedAt = React.useCallback((backlogItem) => {
-    const domain = 'delivery-gear.gardener.cloud'
-    const annotationClaimedAt = `${domain}/claimed-at`
-    const labelClaimed = `${domain}/claimed`
-
-    const annotations = backlogItem.metadata.annotations
-    const labels = backlogItem.metadata.labels
-    if (labelClaimed in labels && labels[labelClaimed] === 'True') {
-      return annotations[annotationClaimedAt]
-    }
-    return null
+    return backlogItem.status?.phase === backlogItemPhases.PROCESSING ? backlogItem.status.claimed_at : null
   }, [])
 
   React.useEffect(() => {
@@ -760,9 +755,27 @@ const BacklogItemRow = ({
     </TableCell>
     <TableCell sx={{width: '10vw', textAlign: 'center'}}>
       {
-        backlogItem.claimed && <Tooltip title={`Started at: ${new Date(backlogItem.claimedAt).toLocaleString(navigator.language)}`}>
-          <HourglassBottomIcon fontSize='small'/>
-        </Tooltip>
+        backlogItem.phase && backlogItem.phase !== backlogItemPhases.PENDING && (() => {
+          const lines = [
+            `Phase: ${backlogItem.phase}`,
+            backlogItem.claimedAt && `Started at: ${new Date(backlogItem.claimedAt).toLocaleString(navigator.language)}`,
+          ].filter(Boolean).join('\n')
+
+          if (!backlogItem.error) return <Tooltip title={<span style={{whiteSpace: 'pre-line'}}>{lines}</span>}>
+            <HourglassBottomIcon fontSize='small'/>
+          </Tooltip>
+
+          const title = <span style={{display: 'block', maxWidth: 1000}}>
+            <span style={{whiteSpace: 'pre-line', fontWeight: 'bold', fontSize: 13}}>{lines}</span>
+            <pre style={{margin: '4px 0 0', fontSize: 11, whiteSpace: 'pre-wrap', wordBreak: 'break-word', opacity: 0.8}}>
+              {[backlogItem.error.message, backlogItem.error.traceback].filter(Boolean).join('\n\n')}
+            </pre>
+          </span>
+
+          return <ExtraWideTooltip title={title}>
+            <HourglassBottomIcon fontSize='small' color='error'/>
+          </ExtraWideTooltip>
+        })()
       }
     </TableCell>
   </TableRow>
