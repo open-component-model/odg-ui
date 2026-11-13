@@ -94,7 +94,7 @@ import { OcmNode } from '../ocm/iter'
 import { artefactMetadataFilter } from '../ocm/util'
 import { MetadataViewerPopover, artefactMetadataTypes, datasources } from '../ocm/model'
 import { routes } from '../api'
-import { DownloadBom, OpenSbomPopoverButton } from '../util/downloadButtons'
+import { OpenSbomPopoverButton } from '../util/downloadButtons'
 import { SprintInfo } from '../util/sprint'
 import ErrorBoundary from '../util/errorBoundary'
 import { VersionOverview, evaluateVersionMatch } from '../util/versionOverview'
@@ -1312,11 +1312,6 @@ const DependenciesTabHeader = React.memo(({
           flexDirection: 'row',
           gap: 1
         }}>
-        <DownloadBom
-          component={component}
-          ocmRepo={searchParamContext.get('ocmRepo')}
-          isLoading={isComponentLoading}
-        />
         {
           extensionsCfg?.sbom_generator?.enabled &&
             <OpenSbomPopoverButton
