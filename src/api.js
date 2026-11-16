@@ -475,15 +475,23 @@ const auth = {
     return await _toJson(fetch(routes.auth.configs()))
   },
   auth: async ({code, clientId, accessToken, apiUrl}) => {
-    const authUrl = new URL(routes.auth.base)
-    appendPresentParams(authUrl, {
-      code: code,
-      client_id: clientId,
-      access_token: accessToken,
-      api_url: apiUrl,
-    })
+    // credentials go into the POST body, not the URL (access logs, browser history, …)
+    const authUrl = new URL(routes.auth.base) // keep as URL object: withAuth checks url.pathname
 
-    return await _toJson(withAuth(authUrl))
+    return await _toJson(
+      withAuth(authUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: code,
+          client_id: clientId,
+          access_token: accessToken,
+          api_url: apiUrl,
+        }),
+      })
+    )
   },
   logout: async () => {
     const resp = await withAuth(routes.auth.logout())
