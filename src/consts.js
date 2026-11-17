@@ -133,6 +133,8 @@ export const pullRequestsStates = {
 Object.freeze(pullRequestsStates)
 
 export const TOKEN_KEY = 'delivery_dashboard_jwt'
+
+export const OAUTH_STATE_KEY = 'oauth_state'
 export const FEATURES_CFG_KEY = 'features'
 export const PATH_KEY = 'path'
 export const PATH_POS_KEY = 'path_pos'

@@ -72,11 +72,8 @@ const withAuth = async (url, config) => {
   const resp = await fetch(url, cfg)
 
   // if the user is logged in but the server responds 401, it means the credentials are not valid
-  // anymore -> try to refresh except in login-case
+  // anymore -> try to refresh (login does not use `withAuth`, so it is never re-sent)
   if (resp.status === 401) {
-    if (url.pathname === '/auth') {
-      await raiseIfNotOk(resp)
-    }
     await refreshToken()
     return await fetch(url, cfg)
   }
@@ -475,15 +472,26 @@ const auth = {
     return await _toJson(fetch(routes.auth.configs()))
   },
   auth: async ({code, clientId, accessToken, apiUrl}) => {
-    const authUrl = new URL(routes.auth.base)
-    appendPresentParams(authUrl, {
-      code: code,
-      client_id: clientId,
-      access_token: accessToken,
-      api_url: apiUrl,
+    // credentials go into the POST body, not the URL (access logs, browser history, …)
+    // no `withAuth`: a failed login must not trigger a token refresh + re-send of the
+    // (single-use) code or the token
+    const resp = await fetch(routes.auth.base, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: code,
+        client_id: clientId,
+        access_token: accessToken,
+        api_url: apiUrl,
+      }),
     })
 
-    return await _toJson(withAuth(authUrl))
+    await raiseIfNotOk(resp)
+
+    return await resp.json()
   },
   logout: async () => {
     const resp = await withAuth(routes.auth.logout())
