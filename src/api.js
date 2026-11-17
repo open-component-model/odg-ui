@@ -58,6 +58,11 @@ const refreshToken = async () => {
       return
     }
 
+    // Re-check after the async fetch: logout may have cleared the token while the
+    // refresh request was in flight. Writing here would re-persist a session the
+    // user explicitly ended
+    if (!localStorage.getItem(TOKEN_KEY)) return
+
     const session_jwt = await _toJson(resp)
     localStorage.setItem(TOKEN_KEY, JSON.stringify(session_jwt))
   })
