@@ -20,6 +20,7 @@ import {
   COMPONENT_PATH,
   LOGIN_PATH,
   MONITORING_PATH,
+  OAUTH_STATE_KEY,
   SERVICES_PATH,
   errorSnackbarProps,
   servicesTabConfig,
@@ -372,17 +373,37 @@ const AuthProvider = () => {
   const configContext = React.useContext(ConfigContext)
   const code = searchParams.get('code')
   const clientId = searchParams.get('client_id')
+  const state = searchParams.get('state')
 
   React.useEffect(() => {
     if (!code || !clientId) return
 
     const oAuthLogin = async () => {
       const url = new URL(document.location)
-      // clear code from URL
+      // clear code from URL (replaceState, so the code-bearing URL does not stay in the
+      // browser history)
       url.searchParams.delete('code')
       url.searchParams.delete('client_id')
+      url.searchParams.delete('state')
 
-      window.history.pushState('', '', url)
+      window.history.replaceState('', '', url)
+
+      // verify the `state` echoed by the OAuth provider against the one stored when the
+      // login was initiated -> protects against login CSRF
+      const expectedState = sessionStorage.getItem(OAUTH_STATE_KEY)
+      sessionStorage.removeItem(OAUTH_STATE_KEY)
+
+      if (!expectedState || state !== expectedState) {
+        configContext.setIsLoginPending(false)
+        enqueueSnackbar(
+          'OAuth login aborted: the state returned by the OAuth provider did not match, please try to login again',
+          {
+            ...errorSnackbarProps,
+          }
+        )
+        return
+      }
+
       try {
         const dashboard_jwt = await auth.auth({code, clientId})
         localStorage.setItem(TOKEN_KEY, JSON.stringify(dashboard_jwt))
