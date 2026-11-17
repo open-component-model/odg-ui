@@ -28,7 +28,7 @@ import { useSnackbar } from 'notistack'
 
 import { auth } from './api'
 import { useFetchProfiles } from './fetch'
-import { DASHBOARD_TITLE, errorSnackbarProps, PROFILE_KEY, TOKEN_KEY } from './consts'
+import { DASHBOARD_TITLE, errorSnackbarProps, OAUTH_STATE_KEY, PROFILE_KEY, TOKEN_KEY } from './consts'
 import { ConfigContext } from './App'
 import ProfileSelector from './util/profileSelector'
 
@@ -269,11 +269,17 @@ const OAuthTab = ({
     const redirectUri = new URL(loc.origin) // redirect to landing page
     redirectUri.searchParams.set('client_id', authConfig.client_id)
 
+    // bind the OAuth callback to this browser tab via `state` to protect against login
+    // CSRF (the callback must echo the same state, otherwise the login is aborted)
+    const state = crypto.randomUUID()
+    sessionStorage.setItem(OAUTH_STATE_KEY, state)
+
     const githubAuthUrl = new URL(authConfig.oauth_url)
     githubAuthUrl.search = new URLSearchParams({
       client_id: authConfig.client_id,
       scope: authConfig.scope,
       redirect_uri: redirectUri.href,
+      state: state,
     })
 
     // forward to github-oauth (user will come back soon enough)
