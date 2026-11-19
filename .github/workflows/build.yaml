@@ -19,7 +19,7 @@ permissions: {}
 
 jobs:
   prepare:
-    uses: gardener/cc-utils/.github/workflows/prepare.yaml@1f5f408a236f484bb0f34ff0b4bf2b4e015c9561 # v1
+    uses: gardener/cc-utils/.github/workflows/prepare.yaml@bce63f62928717a11f610ec8022af9feb497d5df # v1
     permissions:
       id-token: write
     with:
@@ -31,7 +31,7 @@ jobs:
     needs:
     - prepare
     steps:
-    - uses: gardener/cc-utils/.github/actions/trusted-checkout@1f5f408a236f484bb0f34ff0b4bf2b4e015c9561 # v1
+    - uses: gardener/cc-utils/.github/actions/trusted-checkout@bce63f62928717a11f610ec8022af9feb497d5df # v1
     - name: Export odg-extension-definitions
       run: |
         export version=${{ needs.prepare.outputs.version }}
@@ -47,7 +47,7 @@ jobs:
 
         tar czf ${blobs_dir}/extension_definitions.tar.gz ${extension_definitions}
 
-    - uses: gardener/cc-utils/.github/actions/export-ocm-fragments@1f5f408a236f484bb0f34ff0b4bf2b4e015c9561 # v1
+    - uses: gardener/cc-utils/.github/actions/export-ocm-fragments@bce63f62928717a11f610ec8022af9feb497d5df # v1
       with:
         ocm-resources: |
           name: odg-extension-definitions
@@ -63,7 +63,7 @@ jobs:
     needs:
       - prepare
     steps:
-      - uses: gardener/cc-utils/.github/actions/trusted-checkout@1f5f408a236f484bb0f34ff0b4bf2b4e015c9561 # v1
+      - uses: gardener/cc-utils/.github/actions/trusted-checkout@bce63f62928717a11f610ec8022af9feb497d5df # v1
 
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -87,7 +87,7 @@ jobs:
           tar czf $eslint_evidence $eslint_logfile eslint.sast.config.mjs
 
       - name: Export ESLint SAST evidence to component descriptor
-        uses: gardener/cc-utils/.github/actions/export-ocm-fragments@1f5f408a236f484bb0f34ff0b4bf2b4e015c9561 # v1
+        uses: gardener/cc-utils/.github/actions/export-ocm-fragments@bce63f62928717a11f610ec8022af9feb497d5df # v1
         with:
           blobs-directory: blobs.d
           ocm-resources: |
@@ -116,7 +116,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
-    uses: gardener/cc-utils/.github/workflows/oci-ocm.yaml@1f5f408a236f484bb0f34ff0b4bf2b4e015c9561 # v1
+    uses: gardener/cc-utils/.github/workflows/oci-ocm.yaml@bce63f62928717a11f610ec8022af9feb497d5df # v1
     with:
       name: delivery-dashboard
       version: ${{ needs.prepare.outputs.version }}
@@ -146,7 +146,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
-    uses: gardener/cc-utils/.github/workflows/helmchart-ocm.yaml@1f5f408a236f484bb0f34ff0b4bf2b4e015c9561 # v1
+    uses: gardener/cc-utils/.github/workflows/helmchart-ocm.yaml@bce63f62928717a11f610ec8022af9feb497d5df # v1
     with:
       name: delivery-dashboard
       dir: charts/delivery-dashboard
