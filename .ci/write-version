@@ -2,9 +2,7 @@
 
 read -r next_version
 
-echo "$next_version" > "$(dirname "$0")/../VERSION"
-
-extension_definitions="$(dirname "$0")/../extension-definitions.yaml"
+extension_definitions="$(dirname "$0")/../extension-definitions/extension-definitions.yaml"
 
 # pass env-var inline to make it available in yq subprocess
 NEXT_VERSION="$next_version" yq -i '
