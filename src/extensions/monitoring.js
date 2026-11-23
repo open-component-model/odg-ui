@@ -2,7 +2,6 @@ import React from 'react'
 
 import {
   Alert,
-  Box,
   Button,
   Checkbox,
   CircularProgress,
@@ -14,7 +13,6 @@ import {
   Select,
   Skeleton,
   Stack,
-  Tab,
   Table,
   TableBody,
   TableCell,
@@ -23,17 +21,14 @@ import {
   TablePagination,
   TableRow,
   TableSortLabel,
-  Tabs,
   Tooltip,
   Typography,
   useTheme,
 } from '@mui/material'
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
 import DeleteIcon from '@mui/icons-material/Delete'
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { alpha } from '@mui/material/styles'
-import { DataGrid, gridClasses } from '@mui/x-data-grid'
 
 import PropTypes from 'prop-types'
 import { useSnackbar } from 'notistack'
@@ -42,22 +37,18 @@ import {
   useFetchAuthUser,
   useFetchBacklogItems,
   useFetchContainerStatuses,
-  useFetchLogCollections,
 } from '../fetch'
 import CopyOnClickChip from '../util/copyOnClickChip'
 import { PersistentDrawerLeft } from '../layout'
-import { TabPanel } from '../component/tabs'
 import {
   backlogItemPhases,
   COMPLIANCE_TOOLS,
   errorSnackbarProps,
   PRIORITIES,
-  servicesTabConfig,
 } from '../consts'
 import {
   camelCaseToDisplayText,
   getAggregatedContainerStatus,
-  logLevelToThemeColor,
   pluralise,
   trimLongString,
   useInterval,
@@ -71,6 +62,7 @@ import MissingPermissionsButton from '../util/missingPermissionsButton'
 
 
 export const MonitoringPage = () => {
+  const theme = useTheme()
   const searchParamContext = React.useContext(SearchParamContext)
   const service = searchParamContext.get('service')
 
@@ -83,12 +75,7 @@ export const MonitoringPage = () => {
   })
   const aggregatedContainerStatus = getAggregatedContainerStatus({statuses, statusesAreLoading: statusesState.isLoading})
 
-  const [logLevel, setLogLevel] = React.useState('INFO')
-  const [logCollections, logCollectionsState, refreshLogCollections] = useFetchLogCollections({
-    service: service,
-    logLevel: logLevel,
-    skipCache: skipCache.current,
-  })
+  const [priority, setPriority] = React.useState(PRIORITIES.NONE)
 
   // refreshing should bypass cache
   const refreshWithoutCache = React.useCallback((callable) => {
@@ -98,7 +85,6 @@ export const MonitoringPage = () => {
 
   const refresh = {
     statuses: () => refreshWithoutCache(refreshContainerStatus),
-    logs: () => refreshWithoutCache(refreshLogCollections),
   }
 
   return <PersistentDrawerLeft open>
@@ -107,99 +93,32 @@ export const MonitoringPage = () => {
         {`Monitoring - ${camelCaseToDisplayText(service)}`}
       </Typography>
       {
-        Object.values(COMPLIANCE_TOOLS).includes(service) ? <ServiceTabs
+        Object.values(COMPLIANCE_TOOLS).includes(service) ? <BacklogTab
           service={service}
           aggregatedContainerStatus={aggregatedContainerStatus}
-          showLoadingAnimation={logCollections === undefined && logCollectionsState.isLoading} // skip animation on re-fetch
-          error={logCollectionsState.error}
-          logCollections={logCollections}
-          logLevelState={{logLevel, setLogLevel}}
+          priorityState={{priority, setPriority}}
           refresh={refresh}
-        /> : <LogTab
-          service={service}
-          aggregatedContainerStatus={aggregatedContainerStatus}
-          logLevelState={{logLevel, setLogLevel}}
-          refresh={refresh}
-          showLoadingAnimation={logCollections === undefined && logCollectionsState.isLoading} // skip animation on re-fetch
-          error={logCollectionsState.error}
-          logCollections={logCollections}
-        />
+        /> : <Stack direction='row' spacing={3} sx={{display: 'flex', alignItems: 'center'}}>
+          <IconButton
+            title='Refresh'
+            sx={{
+              backgroundColor: theme.palette.grey,
+              border: `1px solid ${theme.palette.text.primary}`,
+              color: theme.palette.text.primary,
+            }}
+            onClick={refresh.statuses}
+            disabled={statusesState.isLoading}
+          >
+            <RefreshIcon/>
+          </IconButton>
+          <ServiceStatus serviceStatus={aggregatedContainerStatus}/>
+        </Stack>
       }
     </Stack>
   </PersistentDrawerLeft>
 }
 MonitoringPage.displayName = 'MonitoringPage'
 MonitoringPage.propTypes = {}
-
-
-const ServiceTabs = ({
-  service,
-  aggregatedContainerStatus,
-  showLoadingAnimation,
-  error,
-  logCollections,
-  logLevelState,
-  refresh,
-}) => {
-  const searchParamContext = React.useContext(SearchParamContext)
-  const currentTab = searchParamContext.get('servicesTab') || servicesTabConfig.BACKLOG.id
-
-  // priority is already initialised here to keep state between tab changes
-  const [priority, setPriority] = React.useState(PRIORITIES.NONE)
-
-  const handleChange = (_, newTab) => {
-    searchParamContext.update({'servicesTab': newTab})
-  }
-
-  return <>
-    <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
-      <Tabs
-        value={currentTab}
-        onChange={handleChange}
-        variant='scrollable'
-        scrollButtons='auto'
-        textColor='secondary'
-      >
-        {
-          Object.values(servicesTabConfig).map((tab) => <Tab
-            label={tab.caption}
-            key={tab.id}
-            value={tab.id}
-          />)
-        }
-      </Tabs>
-    </Box>
-    <TabPanel value={currentTab} index={servicesTabConfig.BACKLOG.id}>
-      <BacklogTab
-        service={service}
-        aggregatedContainerStatus={aggregatedContainerStatus}
-        priorityState={{priority, setPriority}}
-        refresh={refresh}
-      />
-    </TabPanel>
-    <TabPanel value={currentTab} index={servicesTabConfig.LOGS.id}>
-      <LogTab
-        service={service}
-        aggregatedContainerStatus={aggregatedContainerStatus}
-        showLoadingAnimation={showLoadingAnimation}
-        error={error}
-        logCollections={logCollections}
-        logLevelState={logLevelState}
-        refresh={refresh}
-      />
-    </TabPanel>
-  </>
-}
-ServiceTabs.displayName = 'ServiceTabs'
-ServiceTabs.propTypes = {
-  service: PropTypes.string.isRequired,
-  aggregatedContainerStatus: PropTypes.object.isRequired,
-  showLoadingAnimation: PropTypes.bool.isRequired,
-  error: PropTypes.any,
-  logCollections: PropTypes.array,
-  logLevelState: PropTypes.object.isRequired,
-  refresh: PropTypes.object.isRequired,
-}
 
 
 const BacklogTab = ({
@@ -814,243 +733,4 @@ PriorityFilter.displayName = 'PriorityFilter'
 PriorityFilter.propTypes = {
   priority: PropTypes.object.isRequired,
   setPriority: PropTypes.func.isRequired,
-}
-
-
-const LogTab = ({
-  service,
-  aggregatedContainerStatus,
-  error,
-  logLevelState,
-  refresh,
-  showLoadingAnimation,
-  logCollections,
-}) => {
-  const theme = useTheme()
-
-  const {logLevel, setLogLevel} = logLevelState
-
-  const logs = logCollections?.length === 1 ? [...logCollections[0].spec.logs].reverse().map(
-    (log, idx) => {
-      return {
-        ...log,
-        id: idx,
-      }
-    }
-  ) : []
-
-  return (
-    <>
-      <Stack
-        direction='row'
-        spacing={3}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-        <Stack
-          direction='row'
-          spacing={3}
-          sx={{
-            display: 'flex',
-            alignItems: 'center'
-          }}>
-          <LogLevelFilter
-            logLevel={logLevel}
-            setLogLevel={setLogLevel}
-          />
-          <IconButton
-            title='Refresh'
-            sx={{
-              backgroundColor: theme.palette.grey,
-              border: `1px solid ${theme.palette.text.primary}`,
-              color: theme.palette.text.primary,
-            }}
-            onClick={() => {
-              refresh.statuses()
-              refresh.logs()
-            }}
-            disabled={showLoadingAnimation}
-          >
-            <RefreshIcon/>
-          </IconButton>
-          <ServiceStatus serviceStatus={aggregatedContainerStatus}/>
-        </Stack>
-        <DownloadLogs logs={logs} service={service} logLevel={logLevel} disabled={showLoadingAnimation || Boolean(error)}/>
-      </Stack>
-      <div style={{height: '2rem'}}/>
-      <Logs logs={logs} isLoading={showLoadingAnimation} isError={Boolean(error)}/>
-    </>
-  )
-}
-LogTab.displayName = 'LogTab'
-LogTab.propTypes = {
-  service: PropTypes.string.isRequired,
-  aggregatedContainerStatus: PropTypes.object.isRequired,
-  logCollections: PropTypes.array,
-  logLevelState: PropTypes.object.isRequired,
-  refresh: PropTypes.object.isRequired,
-  showLoadingAnimation: PropTypes.bool.isRequired,
-  error: PropTypes.any,
-}
-
-
-export const Logs = ({
-  logs,
-  isLoading,
-  isError,
-}) => {
-  const theme = useTheme()
-  const context = React.useContext(ConfigContext)
-
-  if (isError) return <Alert severity='error' variant={context.prefersDarkMode ? 'outlined' : 'standard'}>
-    Logs could not be fetched.
-  </Alert>
-  // show loading skeleton if service/log level changes (no logs available yet) or no logs found and is loading again
-  else if (isLoading && logs.length === 0) return <Skeleton/>
-
-  const columns = [
-    {
-      field: 'timestamp',
-      headerName: 'Timestamp',
-      type: 'dateTime',
-      flex: 10,
-      valueGetter: (value) => new Date(value),
-    },
-    {
-      field: 'logLevel',
-      headerName: 'Level',
-      flex: 5,
-      renderCell: ({value}) => {
-        return <div style={{color: theme.palette[logLevelToThemeColor(value)].main}}>
-          {value}
-        </div>
-      },
-    },
-    {
-      field: 'thread',
-      headerName: 'Thread',
-      description: 'The name of the thread the log was written in',
-      flex: 7,
-    },
-    {
-      field: 'name',
-      headerName: 'Name',
-      description: 'The name of the module the log was written in',
-      flex: 7,
-    },
-    {
-      field: 'message',
-      headerName: 'Message',
-      flex: 40,
-      renderCell: ({value}) => {
-        if (value.replace(/\n$/).includes('\n'))
-          // if value contains linebreaks (except in last line), honour these and also use
-          // monospace font to ensure lines are correctly aligned -> e.g. relevant for stacktraces
-          return <div style={{whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: 12}}>{value}</div>
-        return value
-      },
-    },
-  ]
-
-  return <DataGrid
-    rows={logs}
-    columns={columns}
-    initialState={{
-      pagination: {
-        paginationModel: { page: 0, pageSize: 100 },
-      },
-    }}
-    pageSizeOptions={[50, 100]}
-    getRowHeight={() => 'auto'}
-    autoHeight={true}
-    disableRowSelectionOnClick={true}
-    sx={{
-      [`& .${gridClasses.cell}`]: {
-        py: 1,
-      },
-    }}
-  />
-}
-Logs.displayName = 'Logs'
-Logs.propTypes = {
-  logs: PropTypes.arrayOf(PropTypes.object).isRequired,
-  isLoading: PropTypes.bool.isRequired,
-  isError: PropTypes.bool.isRequired,
-}
-
-
-const LogLevelFilter = ({
-  logLevel,
-  setLogLevel,
-}) => {
-  const logLevels = ['DEBUG', 'INFO', 'WARNING', 'ERROR']
-
-  return <FormControl variant='standard'>
-    <InputLabel>Minimum Log Level</InputLabel>
-    <Select
-      value={logLevel}
-      onChange={(e) => setLogLevel(e.target.value)}
-      sx={{ minWidth: '150px' }}
-    >
-      {
-        logLevels.map((level) => <MenuItem key={level} value={level}>
-          <Typography color={logLevelToThemeColor(level)} variant='body2'>
-            {level}
-          </Typography>
-        </MenuItem>)
-      }
-    </Select>
-  </FormControl>
-}
-LogLevelFilter.displayName = 'LogLevelFilter'
-LogLevelFilter.propTypes = {
-  logLevel: PropTypes.string.isRequired,
-  setLogLevel: PropTypes.func.isRequired,
-}
-
-
-const DownloadLogs = ({
-  logs,
-  service,
-  logLevel,
-  disabled,
-}) => {
-  const theme = useTheme()
-  const plaintextLogs = logs.map((log) => {
-    return `${log.timestamp} [${log.logLevel}] [${log.thread}] ${log.name}: ${log.message}\n`
-  }).join('')
-
-  const handleClick = async () => {
-    const blob = new Blob([plaintextLogs], {
-      type: 'text/plain',
-    })
-    const filename = `logs-${service}-${logLevel}.txt`
-
-    const href = await URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = href
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  return <Button
-    startIcon={<CloudDownloadIcon />}
-    onClick={handleClick}
-    variant='outlined'
-    style={theme.bomButton}
-    disabled={disabled}
-  >
-    Download Logs
-  </Button>
-}
-DownloadLogs.displayName = 'DownloadLogs'
-DownloadLogs.propTypes = {
-  logs: PropTypes.arrayOf(PropTypes.object).isRequired,
-  service: PropTypes.string.isRequired,
-  logLevel: PropTypes.string.isRequired,
-  disabled: PropTypes.bool.isRequired,
 }

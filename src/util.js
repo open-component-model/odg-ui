@@ -567,44 +567,6 @@ export const getAggregatedContainerStatus = ({
 }
 
 
-export const getAggregatedLoggingStatus = ({
-  logCollection,
-  logCollectionIsLoading,
-}) => {
-  const includedHours = 12
-  const recentErrors = logCollection?.spec.logs.filter((log) => new Date() - new Date(log.timestamp) < 3600000 * includedHours)
-
-  const conditionLoggingStatusHealthy = recentErrors?.length === 0
-  const conditionLoggingStatusChecking = logCollectionIsLoading
-  const conditionLoggingStatusUnhealthy = recentErrors?.length > 0
-
-  if (conditionLoggingStatusHealthy) return {
-    status: healthStatuses.HEALTHY,
-    description: 'No recent errors',
-  }
-
-  if (conditionLoggingStatusChecking) return {
-    status: healthStatuses.CHECKING,
-    description: 'Checking...',
-  }
-
-  if (conditionLoggingStatusUnhealthy) return {
-    status: healthStatuses.UNHEALTHY,
-    description: `${recentErrors.length} error${recentErrors.length > 1 ? 's' : ''} occurred during the last ${includedHours} hours`,
-  }
-
-  return {
-    status: healthStatuses.RETRIEVAL_ERROR,
-    description: 'Error occurred during retrieval of recent logs',
-  }
-}
-
-
-export const logLevelToThemeColor = (logLevel) => {
-  return `level${logLevel.charAt(0).toUpperCase() + logLevel.slice(1).toLowerCase()}`
-}
-
-
 export const removeNullValues = (obj) => {
   return Object.fromEntries(Object.entries(obj).map((entry) => {
     const value = entry[1]

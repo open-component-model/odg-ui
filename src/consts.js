@@ -35,18 +35,6 @@ export const tabConfig = {
 }
 Object.freeze(tabConfig)
 
-export const servicesTabConfig = {
-  BACKLOG: {
-    id: 'backlog',
-    caption: 'Backlog',
-  },
-  LOGS: {
-    id: 'logs',
-    caption: 'Logs',
-  },
-}
-Object.freeze(servicesTabConfig)
-
 export const backlogItemPhases = {
   FAILED: 'Failed',
   PENDING: 'Pending',

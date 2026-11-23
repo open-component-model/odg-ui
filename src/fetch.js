@@ -535,49 +535,6 @@ const useFetchServiceExtensions = () => {
 }
 
 
-const useFetchLogCollections = ({
-  service,
-  logLevel,
-  skipCache = false,
-}) => {
-  const featureRegistrationContext = React.useContext(FeatureRegistrationContext)
-  const [clusterAccessFeature, setClusterAccessFeature] = React.useState()
-
-  React.useEffect(() => {
-    return registerCallbackHandler({
-      featureRegistrationContext: featureRegistrationContext,
-      featureName: features.CLUSTER_ACCESS,
-      callback: ({feature}) => setClusterAccessFeature(feature),
-    })
-  }, [featureRegistrationContext])
-
-  const fetchCondition = React.useCallback(() => {
-    return clusterAccessFeature?.isAvailable
-  }, [clusterAccessFeature])
-
-  const params = React.useMemo(() => ({
-    service,
-    logLevel,
-  }), [
-    service,
-    logLevel,
-  ])
-
-  const cacheKey = JSON.stringify({
-    route: routes.serviceExtensions.logCollections(),
-    fetchParams: normaliseObject(params),
-  })
-
-  return _useFetch({
-    fetchFunction: serviceExtensions.logCollections,
-    fetchParams: params,
-    fetchCondition: fetchCondition,
-    errorMessage: `Log collection for service ${service} and log level ${logLevel} could not be fetched`,
-    cacheKey: skipCache ? null : cacheKey,
-  })
-}
-
-
 const useFetchContainerStatuses = ({
   service,
   skipCache = false,
@@ -755,7 +712,6 @@ export {
   useFetchQueryMetadata,
   useFetchComponentResponsibles,
   useFetchServiceExtensions,
-  useFetchLogCollections,
   useFetchContainerStatuses,
   useFetchBacklogItems,
   useFetchDoraMetrics,

@@ -21,13 +21,11 @@ import { useNavigate } from 'react-router'
 
 import {
   useFetchContainerStatuses,
-  useFetchLogCollections,
   useFetchServiceExtensions,
 } from '../fetch'
 import {
   camelCaseToDisplayText,
   getAggregatedContainerStatus,
-  getAggregatedLoggingStatus,
   snakeToCamelCase,
 } from '../util'
 import {
@@ -42,7 +40,6 @@ import { ServiceStatus } from '../extensions/service.js'
 const ServiceExtensionStatus = () => {
   const [services, state] = useFetchServiceExtensions()
   const [statuses, statusesState] = useFetchContainerStatuses({})
-  const [logCollections, logCollectionState] = useFetchLogCollections({logLevel: 'ERROR'})
 
   if (!services || state.isLoading || state.error) {
     return <a href={`#${SERVICES_PATH}`}>
@@ -57,17 +54,10 @@ const ServiceExtensionStatus = () => {
       statuses: statuses?.filter((status) => snakeToCamelCase(status.name).startsWith(service)),
       statusesAreLoading: statusesState.isLoading,
     })
-    const aggregatedLoggingStatus = getAggregatedLoggingStatus({
-      logCollection: logCollections?.find((logCollection) => logCollection.spec.service === service),
-      logCollectionIsLoading: logCollectionState.isLoading,
-    })
-    const worstStatus = aggregatedContainerStatus.status.severity > aggregatedLoggingStatus.status.severity ?
-      aggregatedContainerStatus.status :
-      aggregatedLoggingStatus.status
+    const worstStatus = aggregatedContainerStatus.status
     return {
       service,
       aggregatedContainerStatus,
-      aggregatedLoggingStatus,
       worstStatus,
     }
   })
@@ -105,14 +95,11 @@ const ServiceExtensionStatusChip = ({
   >
     <TableHead>
       <TableRow>
-        <TableCell sx={{width: '34%'}}>
+        <TableCell sx={{width: '50%'}}>
           <Typography variant='inherit' sx={{color: 'white', marginRight: '8rem'}}>Name</Typography>
         </TableCell>
-        <TableCell sx={{width: '33%'}}>
+        <TableCell sx={{width: '50%'}}>
           <Typography variant='inherit' sx={{color: 'white', marginRight: '8rem'}}>Container Status</Typography>
-        </TableCell>
-        <TableCell sx={{width: '33%'}}>
-          <Typography variant='inherit' sx={{color: 'white'}}>Logging Status</Typography>
         </TableCell>
       </TableRow>
     </TableHead>
@@ -131,16 +118,13 @@ const ServiceExtensionStatusChip = ({
             backgroundColor: 'grey',
           }}}
         >
-          <TableCell sx={{width: '34%'}}>
+          <TableCell sx={{width: '50%'}}>
             <Typography variant='inherit' sx={{color: 'white'}}>
               {camelCaseToDisplayText(serviceStatus.service)}
             </Typography>
           </TableCell>
-          <TableCell sx={{width: '33%'}}>
+          <TableCell sx={{width: '50%'}}>
             <ServiceStatus serviceStatus={serviceStatus.aggregatedContainerStatus} />
-          </TableCell>
-          <TableCell sx={{width: '33%'}}>
-            <ServiceStatus serviceStatus={serviceStatus.aggregatedLoggingStatus} />
           </TableCell>
         </TableRow>)
       }
