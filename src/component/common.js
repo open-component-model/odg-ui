@@ -10,6 +10,7 @@ import {
   Box,
   capitalize,
   CircularProgress,
+  Collapse,
   Divider,
   Grid,
   Link,
@@ -23,6 +24,7 @@ import {
 import IconButton from '@mui/material/IconButton'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'
@@ -119,6 +121,67 @@ ComponentNavigation.propTypes = {
   browserLocalOnly: PropTypes.bool,
 }
 
+const LandscapeListEntry = ({
+  typeName,
+  components,
+  view,
+  selectedSpecialComponentId,
+  selectedBrowserLocalOnly,
+}) => {
+  const [open, setOpen] = React.useState(true)
+
+  const handleClick = () => {
+    setOpen(!open)
+  }
+
+  return <div>
+    <ListItemButton onClick={handleClick}>
+      <ListItemText primary={capitalize(typeName)}/>
+      {
+        open ? <ExpandLess/> : <ExpandMoreIcon/>
+      }
+    </ListItemButton>
+    <Collapse in={open} timeout='auto' unmountOnExit>
+      <List disablePadding>
+        {
+          components.map(component => <ListItemButton
+            key={JSON.stringify(component)}
+            sx={{
+              paddingLeft: 4,
+            }}
+            // use href rather than router to enable "open in new tab"
+            href={`#${componentPathQuery({
+              name: component.name,
+              version: component.version,
+              view: view,
+              ocmRepo: component.ocmRepo,
+              specialComponentId: component.id,
+              specialComponentBrowserLocalOnly: component.browserLocalOnly,
+            }
+            )}`}
+            selected={selectedSpecialComponentId === component.id && selectedBrowserLocalOnly === component.browserLocalOnly}
+          >
+            <ListItemText>
+              {
+                capitalize(component.displayName)
+              }
+            </ListItemText>
+          </ListItemButton>)
+        }
+      </List>
+    </Collapse>
+  </div>
+}
+LandscapeListEntry.displayName = 'LandscapeListEntry'
+LandscapeListEntry.propTypes = {
+  typeName: PropTypes.string.isRequired,
+  components: PropTypes.arrayOf(PropTypes.object).isRequired,
+  view: PropTypes.string,
+  selectedSpecialComponentId: PropTypes.string,
+  selectedBrowserLocalOnly: PropTypes.bool,
+}
+
+
 const LandscapeList = ({
   specialComponentId,
   browserLocalOnly,
@@ -142,28 +205,18 @@ const LandscapeList = ({
       : []
   }
 
+  const specialComponentTypes = [... new Set(getSpecialComponents().map((c) => c.type))]
+
   return <List component='nav'>
     {
-      getSpecialComponents().map(component => <ListItemButton
-        key={JSON.stringify(component)}
-        // use href rather than router to enable "open in new tab"
-        href={`#${componentPathQuery({
-          name: component.name,
-          version: component.version,
-          view: searchParamContext.get('view'),
-          ocmRepo: component.ocmRepo,
-          specialComponentId: component.id,
-          specialComponentBrowserLocalOnly: component.browserLocalOnly,
-        }
-        )}`}
-        selected={specialComponentId === component.id && browserLocalOnly === component.browserLocalOnly}
-      >
-        <ListItemText>
-          {
-            capitalize(component.displayName)
-          }
-        </ListItemText>
-      </ListItemButton>)
+      specialComponentTypes.map((type) => <LandscapeListEntry
+        key={type}
+        typeName={type}
+        components={getSpecialComponents().filter((component) => component.type === type)}
+        view={searchParamContext.get('view')}
+        selectedSpecialComponentId={specialComponentId}
+        selectedBrowserLocalOnly={browserLocalOnly}
+      />)
     }
   </List>
 }
@@ -202,7 +255,20 @@ ServiceListEntry.propTypes = {
 
 const ServiceList = () => {
   const [services, state] = useFetchServiceExtensions()
+  const [open, setOpen] = React.useState(true)
   const navigate = useNavigate()
+
+  const handleToggleClick = (event) => {
+    event.stopPropagation()
+    setOpen(!open)
+  }
+
+  const handleToggleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.stopPropagation()
+      setOpen(!open)
+    }
+  }
 
   if (state.isLoading || state.error || !services) {
     return null
@@ -211,12 +277,27 @@ const ServiceList = () => {
   return <List component='nav'>
     <ListItemButton onClick={() => navigate(SERVICES_PATH)}>
       <ListItemText primary='Extensions'/>
+      <div
+        role='button'
+        tabIndex={0}
+        onClick={handleToggleClick}
+        onKeyDown={handleToggleKeyDown}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        {open ? <ExpandLess/> : <ExpandMoreIcon/>}
+      </div>
     </ListItemButton>
-    <List disablePadding>
-      {
-        services.map((service) => <ServiceListEntry key={service} service={service}/>)
-      }
-    </List>
+    <Collapse in={open} timeout='auto' unmountOnExit>
+      <List disablePadding>
+        {
+          services.map((service) => <ServiceListEntry key={service} service={service}/>)
+        }
+      </List>
+    </Collapse>
   </List>
 }
 ServiceList.displayName = 'ServiceList'
