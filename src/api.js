@@ -175,7 +175,6 @@ export const routes = {
   },
   serviceExtensions: {
     base: api('service-extensions'),
-    logCollections: () => `${routes.serviceExtensions.base}/log-collections`,
     containerStatuses: () => `${routes.serviceExtensions.base}/container-statuses`,
     backlogItems: () => `${routes.serviceExtensions.base}/backlog-items`,
   },
@@ -512,18 +511,6 @@ const serviceExtensions = {
     const url = new URL(routes.serviceExtensions.base)
 
     return (await _toJson(withAuth(url))).sort()
-  },
-  logCollections: async ({
-    service,
-    logLevel,
-  }) => {
-    const url = new URL(routes.serviceExtensions.logCollections())
-    appendPresentParams(url, {
-      service: service,
-      log_level: logLevel,
-    })
-
-    return await _toJson(withAuth(url))
   },
   containerStatuses: async ({service}) => {
     const url = new URL(routes.serviceExtensions.containerStatuses())

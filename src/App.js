@@ -23,7 +23,6 @@ import {
   OAUTH_STATE_KEY,
   SERVICES_PATH,
   errorSnackbarProps,
-  servicesTabConfig,
   tabConfig,
   TOKEN_KEY,
   SHOW_SNOWFLAKES,
@@ -316,7 +315,6 @@ const InnerRouter = () => {
       const defaultValues = {
         'view': tabConfig.BOM.id,
         'version': 'greatest',
-        'servicesTab': servicesTabConfig.BACKLOG.id,
       }
       return defaultValues[param]
     },

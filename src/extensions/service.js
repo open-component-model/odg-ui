@@ -18,7 +18,6 @@ import { useNavigate } from 'react-router'
 
 import {
   useFetchContainerStatuses,
-  useFetchLogCollections,
   useFetchServiceExtensions,
 } from '../fetch'
 import {PersistentDrawerLeft} from '../layout'
@@ -30,7 +29,6 @@ import {
 import {
   camelCaseToDisplayText,
   getAggregatedContainerStatus,
-  getAggregatedLoggingStatus,
   removeNullValues,
   snakeToCamelCase,
   toYamlString,
@@ -51,7 +49,6 @@ const Services = () => {
   const navigate = useNavigate()
   const [services, state] = useFetchServiceExtensions()
   const [statuses, statusesState] = useFetchContainerStatuses({})
-  const [logCollections, logCollectionsState] = useFetchLogCollections({logLevel: 'ERROR'})
 
   if (!services || state.isLoading || state.error) {
     return null
@@ -71,13 +68,6 @@ const Services = () => {
       sortable: false,
       renderCell: ({value}) =>  <ServiceStatus serviceStatus={value} />
     },
-    {
-      field: 'aggregatedLoggingStatus',
-      headerName: 'Logging Status',
-      flex: 5,
-      sortable: false,
-      renderCell: ({value}) =>  <ServiceStatus serviceStatus={value} />
-    },
   ]
 
   const aggregatedServiceStatuses = services.map((service, idx) => {
@@ -88,10 +78,6 @@ const Services = () => {
         statuses: statuses?.filter((status) => snakeToCamelCase(status.name).startsWith(service)),
         statusesAreLoading: statusesState.isLoading,
       }),
-      aggregatedLoggingStatus: getAggregatedLoggingStatus({
-        logCollection: logCollections?.find((logCollection) => logCollection.spec.service === service),
-        logCollectionIsLoading: logCollectionsState.isLoading,
-      })
     }
   })
 

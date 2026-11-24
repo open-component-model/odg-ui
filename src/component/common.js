@@ -22,10 +22,9 @@ import {
   Typography,
 } from '@mui/material'
 import IconButton from '@mui/material/IconButton'
-import ExpandLess from '@mui/icons-material/ExpandLess'
-import ExpandMore from '@mui/icons-material/ExpandMore'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'
@@ -56,7 +55,7 @@ import {
   urlsFromOcmRepositoryCfgsFeature,
   useDebounce,
 } from '../util'
-import { useFetchServiceExtensions, useFetchComponentDescriptor, useFetchGreatestVersions } from '../fetch'
+import { useFetchComponentDescriptor, useFetchGreatestVersions, useFetchServiceExtensions } from '../fetch'
 import NotFoundPage from '../notFound'
 import { ComponentTabs } from './tabs'
 import { PersistentDrawerLeft } from '../layout'
@@ -139,7 +138,7 @@ const LandscapeListEntry = ({
     <ListItemButton onClick={handleClick}>
       <ListItemText primary={capitalize(typeName)}/>
       {
-        open ? <ExpandLess/> : <ExpandMore/>
+        open ? <ExpandLess/> : <ExpandMoreIcon/>
       }
     </ListItemButton>
     <Collapse in={open} timeout='auto' unmountOnExit>
@@ -271,29 +270,25 @@ const ServiceList = () => {
     }
   }
 
-  const handleNavigationClick = () => {
-    navigate(SERVICES_PATH)
-  }
-
   if (state.isLoading || state.error || !services) {
     return null
   }
 
   return <List component='nav'>
-    <ListItemButton onClick={handleNavigationClick}>
+    <ListItemButton onClick={() => navigate(SERVICES_PATH)}>
       <ListItemText primary='Extensions'/>
       <div
         role='button'
         tabIndex={0}
         onClick={handleToggleClick}
         onKeyDown={handleToggleKeyDown}
-        style={{ 
+        style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}
       >
-        {open ? <ExpandLess/> : <ExpandMore/>}
+        {open ? <ExpandLess/> : <ExpandMoreIcon/>}
       </div>
     </ListItemButton>
     <Collapse in={open} timeout='auto' unmountOnExit>
