@@ -78,7 +78,7 @@ started it without `--rm`, delete it explicitly with `docker rm odg-ui`.
 ## Code style
 
 We use [eslint](https://eslint.org/) with the configs `eslint.config.mjs` (code style) and
-`eslint.sast.config.mjs` (security-focused, also run in CI to produce SAST evidence).
+`eslint.sast.config.mjs` (security-focused, also run in CI).
 All plugins are regular dev dependencies, so a plain `npm install` is sufficient.
 
 Run the linter via:

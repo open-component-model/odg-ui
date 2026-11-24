@@ -1,8 +1,14 @@
 # image property will be set during release
 # accepts a tag (repo:tag) or a digest-pinned tag (sha256:... -> repo@digest)
 image:
-  repository: ~
-  tag: ~
+  ref: null
+  repository: null
+  tag: null
+busybox:
+  image:
+    ref: null
+    repository: docker.io/library/busybox
+    tag: sha256:a46257e06c82ad85242d0d38077d0a52d9896389ca60a1a59d3463db586e5fa4
 imagePullSecrets: []
 envVars: []
 host: localhost
