@@ -1,0 +1,60 @@
+name: ocm.software/open-delivery-gear/ui
+version: "${VERSION}"
+provider:
+  name: ocm.software
+labels:
+  - name: odg.ocm.software/responsibles
+    value:
+      - github_hostname: github.com
+        teamname: open-component-model/maintainers
+        type: githubTeam
+resources:
+  - name: delivery-dashboard
+    type: ociImage
+    version: "${VERSION}"
+    relation: local
+    access:
+      type: OCIImage/v1
+      imageReference: "${DELIVERY_DASHBOARD_IMAGE_REF}"
+    labels:
+      - name: security.ocm.software/risk-profile
+        value:
+          network_exposure: public
+          authentication_enforced: false
+          user_interaction: end-user
+          confidentiality_requirement: none
+          integrity_requirement: high
+          availability_requirement: high
+  - name: delivery-dashboard
+    type: helmChart
+    version: "${VERSION}"
+    extraIdentity:
+      type: helmChart
+    relation: local
+    access:
+      type: OCIImage/v1
+      imageReference: "${DELIVERY_DASHBOARD_CHART_REF}"
+  - name: busybox
+    type: ociImage
+    version: 1.38.0
+    relation: external
+    access:
+      type: OCIImage/v1
+      imageReference: docker.io/library/busybox:1.38.0@sha256:a46257e06c82ad85242d0d38077d0a52d9896389ca60a1a59d3463db586e5fa4
+  - name: odg-extension-definitions
+    type: odg-extension
+    version: "${VERSION}"
+    relation: local
+    input:
+      type: Dir/v1
+      path: ./extension-definitions
+      compress: true
+  - name: delivery-dashboard
+    type: helmchart-imagemap
+    version: "${VERSION}"
+    extraIdentity:
+      type: helmchart-imagemap
+    relation: local
+    input:
+      type: File/v1
+      path: helmchart-imagemaps/delivery-dashboard.json

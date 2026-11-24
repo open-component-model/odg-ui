@@ -1,0 +1,21 @@
+{
+  "helmchartResource": {
+    "name": "delivery-dashboard"
+  },
+  "imageMapping": [
+    {
+      "resource": {
+        "name": "delivery-dashboard"
+      },
+      "repository": "image.repository",
+      "tag": "image.tag"
+    },
+    {
+      "resource": {
+        "name": "busybox"
+      },
+      "repository": "busybox.image.repository",
+      "tag": "busybox.image.tag"
+    }
+  ]
+}
