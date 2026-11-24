@@ -34,6 +34,7 @@ import { FeatureRegistrationContext, SearchParamContext } from '../App'
 import {
   ARTEFACT_KIND,
   features,
+  MONITORING_PATH,
   OCM_REPO_AUTO_OPTION,
   PATH_KEY,
   PATH_POS_KEY,
@@ -44,6 +45,7 @@ import {
 import { registerCallbackHandler } from '../feature'
 import {
   addPresentKeyValuePairs,
+  camelCaseToDisplayText,
   componentPathQuery,
   getMergedSpecialComponents,
   normaliseExtraIdentity,
@@ -51,7 +53,7 @@ import {
   urlsFromOcmRepositoryCfgsFeature,
   useDebounce,
 } from '../util'
-import { useFetchComponentDescriptor, useFetchGreatestVersions } from '../fetch'
+import { useFetchComponentDescriptor, useFetchGreatestVersions, useFetchServiceExtensions } from '../fetch'
 import NotFoundPage from '../notFound'
 import { ComponentTabs } from './tabs'
 import { PersistentDrawerLeft } from '../layout'
@@ -172,14 +174,49 @@ LandscapeList.propTypes = {
 }
 
 
+const ServiceListEntry = ({
+  service,
+}) => {
+  const query = new URLSearchParams({
+    service: service,
+  })
+  return <ListItemButton
+    // use href rather than router to enable "open in new tab"
+    href={`#${MONITORING_PATH}?${query.toString()}`}
+    sx={{
+      paddingLeft: 4
+    }}
+  >
+    <ListItemText>
+      {
+        camelCaseToDisplayText(service)
+      }
+    </ListItemText>
+  </ListItemButton>
+}
+ServiceListEntry.displayName = 'ServiceListEntry'
+ServiceListEntry.propTypes = {
+  service: PropTypes.string.isRequired,
+}
+
+
 const ServiceList = () => {
+  const [services, state] = useFetchServiceExtensions()
+  const navigate = useNavigate()
+
+  if (state.isLoading || state.error || !services) {
+    return null
+  }
+
   return <List component='nav'>
-    <ListItemButton
-      // use href rather than router to enable "open in new tab"
-      href={`#${SERVICES_PATH}`}
-    >
+    <ListItemButton onClick={() => navigate(SERVICES_PATH)}>
       <ListItemText primary='Extensions'/>
     </ListItemButton>
+    <List disablePadding>
+      {
+        services.map((service) => <ServiceListEntry key={service} service={service}/>)
+      }
+    </List>
   </List>
 }
 ServiceList.displayName = 'ServiceList'
