@@ -12,12 +12,15 @@ COPY src ./src
 RUN npm run build
 
 # Pre-compress all compressible assets so the server can serve .gz sidecars
-# directly instead of allocating a gzip.Writer per request.
+# directly instead of allocating a gzip.Writer per request. Uses BusyBox gzip
+# short flags (-9 best, -k keep); the long --best/--keep forms are GNU-only and
+# fail on Alpine. -print0/-0 handles paths with spaces and skips gzip entirely
+# when nothing matches.
 RUN find /src/dist -type f \( \
       -name "*.js" -o -name "*.mjs" -o -name "*.css" \
       -o -name "*.html" -o -name "*.json" -o -name "*.svg" \
       -o -name "*.txt" -o -name "*.xml" \
-    \) | xargs -P4 gzip --best --keep
+    \) -print0 | xargs -0 -r -P4 gzip -9 -k
 
 ################################################
 
