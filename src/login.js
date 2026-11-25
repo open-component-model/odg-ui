@@ -361,11 +361,11 @@ const TokenTab = ({
 
   const login = async (authConfig) => {
     try {
-      const dashboard_jwt = await auth.auth({
+      const sessionMeta = await auth.auth({
         accessToken: token,
         apiUrl: authConfig.api_url,
       })
-      localStorage.setItem(TOKEN_KEY, JSON.stringify(dashboard_jwt))
+      localStorage.setItem(TOKEN_KEY, JSON.stringify(sessionMeta))
       dispatchEvent(new Event('token'))
     } catch {
       setError(true)
