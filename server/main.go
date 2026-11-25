@@ -27,8 +27,11 @@ const (
 )
 
 func main() {
-	// Extensions the Go stdlib mime table may not cover on a scratch image
-	// (no /etc/mime.types). Registering them keeps Content-Type correct.
+	// Extensions the Go stdlib builtin mime table doesn't cover on a scratch
+	// image (no /etc/mime.types). .ico in particular ships in the dist and
+	// would otherwise be content-sniffed. .js/.mjs/.webp are registered
+	// explicitly too so the Content-Type is guaranteed, not table-dependent.
+	_ = mime.AddExtensionType(".ico", "image/x-icon")
 	_ = mime.AddExtensionType(".webp", "image/webp")
 	_ = mime.AddExtensionType(".js", "application/javascript")
 	_ = mime.AddExtensionType(".mjs", "application/javascript")
@@ -37,11 +40,7 @@ func main() {
 	fileServer := http.FileServer(fsys)
 
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		// Runtime config must never be cached: a pod restart may rewrite it with
-		// new REACT_APP_* values and clients must pick those up immediately.
-		if r.URL.Path == configPath {
-			w.Header().Set("Cache-Control", "no-store")
-		}
+		setCacheControl(w, r.URL.Path)
 
 		if clientAcceptsGzip(r) {
 			if tryServePrecompressed(w, r, fsys) {
@@ -81,6 +80,25 @@ func main() {
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Fatalf("graceful shutdown failed: %v", err)
+	}
+}
+
+// setCacheControl applies the right caching policy per resource:
+//   - /assets/* are content-hashed by Vite (e.g. index-DP4ZqrXI.js), so their
+//     content never changes under a given name — cache forever, skip revalidation.
+//   - config.js is runtime config an init container may rewrite on pod restart;
+//     clients must never cache it.
+//   - everything else (index.html, favicon.ico, manifest.json) keeps a stable
+//     name but can change across deploys, so store-but-revalidate: a stale entry
+//     point would reference hashed assets that no longer exist.
+func setCacheControl(w http.ResponseWriter, urlPath string) {
+	switch {
+	case urlPath == configPath:
+		w.Header().Set("Cache-Control", "no-store")
+	case strings.HasPrefix(urlPath, "/assets/"):
+		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	default:
+		w.Header().Set("Cache-Control", "no-cache")
 	}
 }
 
@@ -142,8 +160,15 @@ func tryServePrecompressed(w http.ResponseWriter, r *http.Request, fsys http.Fil
 	return true
 }
 
-// noListFS wraps http.FileSystem to return 403 for directory requests,
-// preventing accidental exposure of file listings under /assets/ etc.
+// noListFS wraps http.FileSystem to suppress directory listings while still
+// serving a directory's index.html. http.FileServer opens a directory, and if
+// it finds no index file it renders a listing of the contents — which would
+// expose /assets/ etc. We can't just reject every directory open: that breaks
+// "/" (and the k8s probes that GET it), because serving "/" means opening the
+// root dir to resolve its index.html. So on a directory open we probe for an
+// index.html inside: present -> allow the open (FileServer serves the index);
+// absent -> return fs.ErrNotExist, which FileServer turns into a clean 404
+// instead of a listing.
 type noListFS struct{ http.FileSystem }
 
 func (n noListFS) Open(name string) (http.File, error) {
@@ -157,8 +182,14 @@ func (n noListFS) Open(name string) (http.File, error) {
 		return nil, err
 	}
 	if fi.IsDir() {
-		f.Close()
-		return nil, os.ErrPermission
+		index := strings.TrimSuffix(name, "/") + "/index.html"
+		if idx, ierr := n.FileSystem.Open(index); ierr != nil {
+			f.Close()
+			return nil, os.ErrNotExist
+		} else {
+			idx.Close()
+		}
 	}
 	return f, nil
 }
+
