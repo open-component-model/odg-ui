@@ -63,8 +63,8 @@ const refreshToken = async () => {
     // user explicitly ended
     if (!localStorage.getItem(TOKEN_KEY)) return
 
-    const session_jwt = await _toJson(resp)
-    localStorage.setItem(TOKEN_KEY, JSON.stringify(session_jwt))
+    const session_meta = await _toJson(resp)
+    localStorage.setItem(TOKEN_KEY, JSON.stringify(session_meta))
   })
 }
 
