@@ -46,7 +46,7 @@ Note: the `Build:` label below the logo in the top-left navigation will show
 `local-production-build`, as the real version is only patched into `.env.production`
 by the CI pipeline during release builds.
 
-Start it (lighttpd serves on port 8080 inside the container, expose it e.g. on port 3000):
+Start it (the static server serves on port 8080 inside the container, expose it e.g. on port 3000):
 
 ```
 docker run -d --rm --name odg-ui -p 3000:8080 odg-ui

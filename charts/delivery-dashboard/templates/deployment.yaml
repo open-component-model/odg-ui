@@ -109,8 +109,6 @@ spec:
           volumeMounts:
             - name: delivery-dashboard-config
               mountPath: /delivery-dashboard/dynamic
-            - name: lighttpd-cache
-              mountPath: /cache
           resources:
             requests:
               memory: 10Mi
@@ -121,9 +119,6 @@ spec:
       - name: delivery-dashboard-config
         emptyDir:
           sizeLimit: 1Mi
-      - name: lighttpd-cache
-        emptyDir:
-          sizeLimit: 10Mi
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
