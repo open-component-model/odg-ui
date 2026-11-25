@@ -11,6 +11,14 @@ COPY src ./src
 
 RUN npm run build
 
+# Pre-compress all compressible assets so the server can serve .gz sidecars
+# directly instead of allocating a gzip.Writer per request.
+RUN find /src/dist -type f \( \
+      -name "*.js" -o -name "*.mjs" -o -name "*.css" \
+      -o -name "*.html" -o -name "*.json" -o -name "*.svg" \
+      -o -name "*.txt" -o -name "*.xml" \
+    \) | xargs -P4 gzip --best --keep
+
 ################################################
 
 FROM golang:1.27-alpine@sha256:70bd7ddea8b6cbe5d6943cde279d6b67feb10cc924fb9100d1d8757c1575b280 AS go-builder
@@ -27,12 +35,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /server .
 
 FROM scratch
 
-# No shell, no libc, no package manager. The k8s securityContext pins the
-# runtime uid/gid (10000, runAsNonRoot); the binary only reads the world-
-# readable dist and writes nothing (config.js is written by the init container
-# into a separate emptyDir mount).
+# No shell, no libc, no package manager. USER locks the runtime uid/gid into
+# the image itself; the k8s securityContext reinforces it at the pod level. The
+# binary only reads the world-readable dist and writes nothing (config.js is
+# written by the init container into a separate emptyDir mount).
 COPY --from=go-builder /server /server
 COPY --from=node-builder /src/dist /delivery-dashboard
 
+USER 10000:10000
 EXPOSE 8080
 ENTRYPOINT ["/server"]
