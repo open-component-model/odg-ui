@@ -403,8 +403,10 @@ const AuthProvider = () => {
       }
 
       try {
-        const dashboard_jwt = await auth.auth({code, clientId})
-        localStorage.setItem(TOKEN_KEY, JSON.stringify(dashboard_jwt))
+        // the delivery-service returns only non-sensitive session metadata (version + exp) in
+        // the body; the signed session JWT is kept in an httponly cookie we cannot read here
+        const sessionMeta = await auth.auth({code, clientId})
+        localStorage.setItem(TOKEN_KEY, JSON.stringify(sessionMeta))
         dispatchEvent(new Event('token'))
       } catch (e) {
         configContext.setIsLoginPending(false)
