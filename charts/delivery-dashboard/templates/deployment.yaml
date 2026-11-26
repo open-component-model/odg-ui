@@ -109,6 +109,10 @@ spec:
           volumeMounts:
             - name: delivery-dashboard-config
               mountPath: /delivery-dashboard/dynamic
+            - name: caddy-config
+              mountPath: /config
+            - name: caddy-data
+              mountPath: /data
           resources:
             requests:
               memory: 10Mi
@@ -117,6 +121,12 @@ spec:
               memory: 100Mi
       volumes:
       - name: delivery-dashboard-config
+        emptyDir:
+          sizeLimit: 1Mi
+      - name: caddy-config
+        emptyDir:
+          sizeLimit: 1Mi
+      - name: caddy-data
         emptyDir:
           sizeLimit: 1Mi
 ---

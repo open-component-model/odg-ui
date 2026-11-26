@@ -22,29 +22,25 @@ RUN find /src/dist -type f \( \
       -o -name "*.txt" -o -name "*.xml" \
     \) -print0 | xargs -0 -r -P4 gzip -9 -k
 
-################################################
-
-FROM golang:1.27-alpine@sha256:70bd7ddea8b6cbe5d6943cde279d6b67feb10cc924fb9100d1d8757c1575b280 AS go-builder
-
-WORKDIR /app
-
-COPY server/go.mod ./
-RUN go mod download
-
-COPY server/ ./
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /server .
+RUN mkdir -p /src/dist/dynamic && \
+    echo "window.REACT_APP_DELIVERY_SERVICE_API_URL = 'http://localhost:5000';" \
+    > /src/dist/dynamic/config.js
 
 ################################################
 
 FROM scratch
 
-# No shell, no libc, no package manager. USER locks the runtime uid/gid into
-# the image itself; the k8s securityContext reinforces it at the pod level. The
-# binary only reads the world-readable dist and writes nothing (config.js is
-# written by the init container into a separate emptyDir mount).
-COPY --from=go-builder /server /server
+# Caddy is statically linked — no libc needed. Even with admin off and
+# auto_https off it writes autosave.json / instance.uuid to $XDG_CONFIG_HOME
+# (/config) and $XDG_DATA_HOME (/data); those are mounted as emptyDir volumes
+# in the Helm chart so readOnlyRootFilesystem: true is satisfied.
+COPY --from=caddy:2-alpine@sha256:003a97808e781aa9f7e75cc2f43d34d461099031faf5e20faefb9f61126836f0 /usr/bin/caddy /caddy
 COPY --from=node-builder /src/dist /delivery-dashboard
+COPY Caddyfile /etc/caddy/Caddyfile
+
+ENV XDG_CONFIG_HOME=/config
+ENV XDG_DATA_HOME=/data
 
 USER 10000:10000
 EXPOSE 8080
-ENTRYPOINT ["/server"]
+ENTRYPOINT ["/caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

@@ -12,9 +12,6 @@
 /build
 /dist
 
-# go build output
-/server/server
-
 # misc
 .DS_Store
 .env.local
