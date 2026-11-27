@@ -8,9 +8,11 @@
 
 	@static {
 		path /assets/* /favicon.ico
+		file
 	}
 	@config {
 		path /dynamic/config.js
+		file
 	}
 
 	# handle blocks with matchers are mutually exclusive — first match wins.
@@ -31,7 +33,7 @@
 		}
 	}
 
-	# Everything else (index.html, favicon, manifest): revalidate on every request.
+	# Everything else (index.html, manifest): revalidate on every request.
 	handle {
 		header Cache-Control "no-cache"
 		file_server {
