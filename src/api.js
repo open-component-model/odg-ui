@@ -475,7 +475,7 @@ const auth = {
   authConfigs: async () => {
     return await _toJson(fetch(routes.auth.configs()))
   },
-  auth: async ({code, clientId, accessToken, apiUrl}) => {
+  auth: async ({code, clientId, accessToken, apiUrl, redirectUri}) => {
     // credentials go into the POST body, not the URL (access logs, browser history, …)
     // no `withAuth`: a failed login must not trigger a token refresh + re-send of the
     // (single-use) code or the token
@@ -490,6 +490,7 @@ const auth = {
         client_id: clientId,
         access_token: accessToken,
         api_url: apiUrl,
+        redirect_uri: redirectUri,
       }),
     })
 
