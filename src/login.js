@@ -274,16 +274,17 @@ const OAuthTab = ({
     const state = crypto.randomUUID()
     sessionStorage.setItem(OAUTH_STATE_KEY, state)
 
-    const githubAuthUrl = new URL(authConfig.oauth_url)
-    githubAuthUrl.search = new URLSearchParams({
+    const authUrl = new URL(authConfig.oauth_url)
+    authUrl.search = new URLSearchParams({
       client_id: authConfig.client_id,
       scope: authConfig.scope,
+      response_type: 'code',
       redirect_uri: redirectUri.href,
       state: state,
     })
 
     // forward to github-oauth (user will come back soon enough)
-    window.location.replace(githubAuthUrl.href)
+    window.location.replace(authUrl.href)
   }
 
   return (
@@ -360,10 +361,15 @@ const TokenTab = ({
   const [error, setError] = React.useState()
 
   const login = async (authConfig) => {
+    const loc = document.location
+    const redirectUri = new URL(loc.origin)
+    redirectUri.searchParams.set('client_id', authConfig.client_id)
+
     try {
       const sessionMeta = await auth.auth({
         accessToken: token,
         apiUrl: authConfig.api_url,
+        redirectUri: redirectUri,
       })
       localStorage.setItem(TOKEN_KEY, JSON.stringify(sessionMeta))
       dispatchEvent(new Event('token'))
@@ -389,7 +395,7 @@ const TokenTab = ({
         setSelectedAuthConfig={setSelectedAuthConfig}
         authConfigs={authConfigs}
         label='System Configuration'
-        authConfigKey='github_host'
+        authConfigKey='hostname'
         isLoginPending={isLoginPending}
       />
       <TextField

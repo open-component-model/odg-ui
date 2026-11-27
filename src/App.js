@@ -402,10 +402,13 @@ const AuthProvider = () => {
         return
       }
 
+      const redirectUri = new URL(document.location.origin)
+      redirectUri.searchParams.set('client_id', clientId)
+
       try {
         // the delivery-service returns only non-sensitive session metadata (version + exp) in
         // the body; the signed session JWT is kept in an httponly cookie we cannot read here
-        const sessionMeta = await auth.auth({code, clientId})
+        const sessionMeta = await auth.auth({code, clientId, redirectUri})
         localStorage.setItem(TOKEN_KEY, JSON.stringify(sessionMeta))
         dispatchEvent(new Event('token'))
       } catch (e) {
